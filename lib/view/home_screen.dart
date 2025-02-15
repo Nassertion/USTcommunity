@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/readmore.dart';
-import '../model/api_server.dart';
-import '../widgets/bottomnav.dart';
+import '../data/services/api_server.dart';
+import '../widgets/bottom_nav.dart';
 
 //home_screen.dart
 class Homescreen extends StatelessWidget {
@@ -43,7 +43,6 @@ class Homescreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackgroundColor,
       appBar: AppBar(
         actions: [
           IconButton(
@@ -58,8 +57,6 @@ class Homescreen extends StatelessWidget {
           padding: EdgeInsets.only(top: 10),
           child: Text(
             "الرئيسية",
-            style: TextStyle(
-                color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700),
           ),
         ),
         centerTitle: true,

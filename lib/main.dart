@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graduation_project/constant/constantColors.dart';
-import 'package:graduation_project/view/homeScreen.dart';
-import 'package:graduation_project/view/loginScreen.dart';
-import 'package:graduation_project/view/SplashScreen.dart';
+import 'package:graduation_project/view/home_screen.dart';
+import 'package:graduation_project/view/login_screen.dart';
+import 'package:graduation_project/view/post_creation_screen.dart';
+import 'package:graduation_project/view/splash_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:graduation_project/view/profileScreen.dart';
-import 'view/postWidegt.dart';
+import 'package:graduation_project/view/profile_screen.dart';
+import 'widgets/post_widegt.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,12 +24,9 @@ class MyApp extends StatelessWidget {
           fontFamily: "ElMessiri",
           scaffoldBackgroundColor: kBackgroundColor,
           appBarTheme: AppBarTheme(
-            color: kPrimaryolor,
+            backgroundColor: kPrimaryolor,
+            foregroundColor: kBackgroundColor,
           ),
-
-          // primaryColor: kPrimaryColor,
-          // colorScheme:
-          //     ColorScheme.fromSwatch().copyWith(secondary: kSecondaryColor)
         ),
         localizationsDelegates: [
           GlobalCupertinoLocalizations.delegate,
@@ -39,7 +37,7 @@ class MyApp extends StatelessWidget {
         locale: Locale("ar", "AE"),
         initialRoute: '/',
         routes: {
-          "/": (context) => Homescreen(),
+          "/": (context) => Postcreationscreen(),
           "/splash": (context) => SplashScreen(),
           "/login": (context) => LogingScreen(),
           "/home": (context) => Homescreen(),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
-import 'package:graduation_project/widgets/bottomnav.dart';
+import 'package:graduation_project/widgets/bottom_nav.dart';
 
 class Profilescreen extends StatefulWidget {
   const Profilescreen({super.key});

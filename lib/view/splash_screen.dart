@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:graduation_project/model/api_server.dart';
+import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 
 class SplashScreen extends StatefulWidget {

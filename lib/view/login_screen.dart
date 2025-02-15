@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:graduation_project/constant/ConstantLinks.dart';
-import 'package:graduation_project/model/api_server.dart';
+import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -133,8 +133,6 @@ class _LogingScreenState extends State<LogingScreen> {
       appBar: AppBar(
         title: Text(
           "صفحة تسجيل الدخول",
-          style: TextStyle(
-              color: Colors.white, fontSize: 19, fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
       ),
