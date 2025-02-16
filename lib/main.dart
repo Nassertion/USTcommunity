@@ -3,7 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/view/home_screen.dart';
 import 'package:graduation_project/view/login_screen.dart';
+import 'package:graduation_project/view/notifacation_screen.dart';
 import 'package:graduation_project/view/post_creation_screen.dart';
+import 'package:graduation_project/view/search_screen.dart';
 import 'package:graduation_project/view/splash_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graduation_project/view/profile_screen.dart';
@@ -37,11 +39,15 @@ class MyApp extends StatelessWidget {
         locale: Locale("ar", "AE"),
         initialRoute: '/',
         routes: {
-          "/": (context) => Postcreationscreen(),
+          "/": (context) => Notifacationscreen(),
           "/splash": (context) => SplashScreen(),
           "/login": (context) => LogingScreen(),
           "/home": (context) => Homescreen(),
           "/idk": (context) => Idk(),
+          "notifacation": (context) => Notifacationscreen(),
+          "/postcreate": (context) => Postcreationscreen(),
+          "/profile": (context) => Profilescreen(),
+          "/search": (context) => Searchscreen(),
         });
   }
 }
