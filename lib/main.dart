@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
         locale: Locale("ar", "AE"),
         initialRoute: '/',
         routes: {
-          "/": (context) => Notifacationscreen(),
+          "/": (context) => Searchscreen(),
           "/splash": (context) => SplashScreen(),
           "/login": (context) => LogingScreen(),
           "/home": (context) => Homescreen(),
