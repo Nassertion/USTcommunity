@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
+import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/widgets/bottom_nav.dart';
 
 class Profilescreen extends StatefulWidget {
@@ -22,10 +23,7 @@ class _ProfilescreenState extends State<Profilescreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("صفحة الملف الشخصي"),
-        centerTitle: true,
-      ),
+      appBar: customAppBar("الملف الشخصي "),
       bottomNavigationBar: Bottomnav(),
       body: Column(
         children: [

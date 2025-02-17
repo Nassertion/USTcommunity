@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 
 class Searchscreen extends StatelessWidget {
@@ -7,7 +8,23 @@ class Searchscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppBar("الاشعارات"),
+      appBar: customAppBar("البحث"),
+      body: Container(
+        height: 200,
+        width: 400,
+        margin: EdgeInsets.only(top: 20, left: 5),
+        child: TextField(
+          maxLines: 1,
+          decoration: InputDecoration(
+              contentPadding: EdgeInsets.all(10),
+              focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: kPrimaryolor, width: 2)),
+              labelStyle: TextStyle(color: kbluegrey),
+              border: OutlineInputBorder(),
+              focusColor: kgrey,
+              prefixIcon: Icon(Icons.search)),
+        ),
+      ),
     );
   }
 }

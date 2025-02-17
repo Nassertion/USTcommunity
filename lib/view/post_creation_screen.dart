@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:graduation_project/constant/constantColors.dart';
+import 'package:graduation_project/widgets/app_bar.dart';
 
 class Postcreationscreen extends StatelessWidget {
   const Postcreationscreen({super.key});
@@ -8,12 +9,7 @@ class Postcreationscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("انشاء منشور"),
-        centerTitle: true,
-        leading:
-            IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_sharp)),
-      ),
+      appBar: customAppBar("انشاء منشور"),
       body: SafeArea(
         child: Container(
           alignment: Alignment.center,

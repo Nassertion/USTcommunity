@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
+import 'package:graduation_project/widgets/app_bar.dart';
 
 class Notifacationscreen extends StatelessWidget {
   const Notifacationscreen({super.key});
@@ -7,12 +8,7 @@ class Notifacationscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("الاشعارات"),
-        centerTitle: true,
-        leading:
-            IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back_sharp)),
-      ),
+      appBar: customAppBar("الاشعارات"),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
