@@ -24,7 +24,6 @@ class _ProfilescreenState extends State<Profilescreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: customAppBar("الملف الشخصي "),
-      bottomNavigationBar: Bottomnav(),
       body: Column(
         children: [
           Container(

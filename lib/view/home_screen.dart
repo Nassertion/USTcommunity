@@ -61,7 +61,6 @@ class Homescreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      bottomNavigationBar: Bottomnav(),
       body: SafeArea(
           child: Container(
         width: double.infinity,

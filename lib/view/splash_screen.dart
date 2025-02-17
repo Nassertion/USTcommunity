@@ -18,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> checkLoginStatus() async {
     String? token = await _crud.getToken();
     if (token != null) {
-      Navigator.of(context).pushReplacementNamed('/home');
+      Navigator.of(context).pushReplacementNamed('/tabs');
     } else {
       Navigator.of(context).pushReplacementNamed('/login');
     }

@@ -9,6 +9,7 @@ import 'package:graduation_project/view/search_screen.dart';
 import 'package:graduation_project/view/splash_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graduation_project/view/profile_screen.dart';
+import 'package:graduation_project/widgets/bottom_nav.dart';
 import 'widgets/post_widegt.dart';
 
 void main() {
@@ -37,17 +38,18 @@ class MyApp extends StatelessWidget {
         ],
         supportedLocales: [Locale("ar", "AE")],
         locale: Locale("ar", "AE"),
-        initialRoute: '/',
+        initialRoute: "/",
         routes: {
-          "/": (context) => Searchscreen(),
+          "/": (context) => Bottomnav(),
           "/splash": (context) => SplashScreen(),
           "/login": (context) => LogingScreen(),
           "/home": (context) => Homescreen(),
           "/idk": (context) => Idk(),
-          "notifacation": (context) => Notifacationscreen(),
+          "notification": (context) => Notifacationscreen(),
           "/postcreate": (context) => Postcreationscreen(),
           "/profile": (context) => Profilescreen(),
           "/search": (context) => Searchscreen(),
+          "/tabs": (context) => Bottomnav(),
         });
   }
 }

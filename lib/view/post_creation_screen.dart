@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
+import 'package:graduation_project/widgets/bottom_nav.dart';
 
 class Postcreationscreen extends StatelessWidget {
   const Postcreationscreen({super.key});
@@ -19,41 +20,13 @@ class Postcreationscreen extends StatelessWidget {
             children: [
               Text("عنوان المنشور"),
               Padding(padding: EdgeInsets.only(bottom: 5)),
-              SizedBox(
-                height: 40,
-                width: 350,
-                child: TextField(
-                  inputFormatters: [LengthLimitingTextInputFormatter(20)],
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.all(10),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: kPrimaryolor, width: 2)),
-                    labelStyle: TextStyle(color: kbluegrey),
-                    border: OutlineInputBorder(),
-                    focusColor: kgrey,
-                  ),
-                ),
-              ),
+              InputField(350, 40, 1, 15),
               SizedBox(
                 height: 50,
               ),
               Text("محتوى المنشور"),
               Padding(padding: EdgeInsets.only(bottom: 5)),
-              SizedBox(
-                height: 200,
-                width: 350,
-                child: TextField(
-                  maxLines: 8,
-                  decoration: InputDecoration(
-                    contentPadding: EdgeInsets.all(10),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: kPrimaryolor, width: 2)),
-                    labelStyle: TextStyle(color: kbluegrey),
-                    border: OutlineInputBorder(),
-                    focusColor: kgrey,
-                  ),
-                ),
-              ),
+              InputField(350, 200, 8, 300),
               SizedBox(
                 height: 50,
               ),
@@ -61,21 +34,7 @@ class Postcreationscreen extends StatelessWidget {
               Padding(padding: EdgeInsets.only(bottom: 5)),
               Row(
                 children: [
-                  SizedBox(
-                    height: 40,
-                    width: 300,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.all(10),
-                        focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: kPrimaryolor, width: 2)),
-                        labelStyle: TextStyle(color: kbluegrey),
-                        border: OutlineInputBorder(),
-                        focusColor: kgrey,
-                      ),
-                    ),
-                  ),
+                  InputField(300, 40, 1, 300),
                   TextButton(
                     onPressed: () {},
                     child: Text(
@@ -105,6 +64,25 @@ class Postcreationscreen extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  SizedBox InputField(double width, double height, int lines, int length) {
+    return SizedBox(
+      height: height,
+      width: width,
+      child: TextField(
+        maxLines: lines,
+        inputFormatters: [LengthLimitingTextInputFormatter(length)],
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.all(10),
+          focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: kPrimaryolor, width: 2)),
+          labelStyle: TextStyle(color: kbluegrey),
+          border: OutlineInputBorder(),
+          focusColor: kgrey,
         ),
       ),
     );

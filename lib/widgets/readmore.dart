@@ -30,7 +30,7 @@ class _ExpandableContentState extends State<ExpandableContent> {
         ),
         // SizedBox(height: 5),
         if (widget.imageUrl != null)
-          Image.network(
+          Image.asset(
             widget.imageUrl!,
             fit: BoxFit.cover,
           ),

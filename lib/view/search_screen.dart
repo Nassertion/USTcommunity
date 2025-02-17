@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
+import 'package:graduation_project/widgets/bottom_nav.dart';
 
 class Searchscreen extends StatelessWidget {
   const Searchscreen({super.key});
@@ -11,8 +12,8 @@ class Searchscreen extends StatelessWidget {
       appBar: customAppBar("البحث"),
       body: Container(
         height: 200,
-        width: 400,
-        margin: EdgeInsets.only(top: 20, left: 5),
+        width: 350,
+        margin: EdgeInsets.only(top: 20, left: 30),
         child: TextField(
           maxLines: 1,
           decoration: InputDecoration(
