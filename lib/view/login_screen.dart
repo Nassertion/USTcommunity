@@ -42,7 +42,6 @@ class _LogingScreenState extends State<LogingScreen> {
           );
         },
       );
-      print("pls input the username and password");
       return;
     }
     loading = true;
