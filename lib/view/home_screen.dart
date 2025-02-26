@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/readmore.dart';
+import 'package:graduation_project/widgets/test_connection.dart';
 import '../data/services/api_server.dart';
 import '../widgets/bottom_nav.dart';
 
@@ -122,7 +123,7 @@ class Homescreen extends StatelessWidget {
               ),
               IconButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed('/idk');
+                    testConnection();
                   },
                   icon: Icon(Icons.abc))
             ],

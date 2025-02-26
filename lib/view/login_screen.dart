@@ -24,106 +24,52 @@ class _LogingScreenState extends State<LogingScreen> {
 
   Future<void> login() async {
     if (username.text.isEmpty || password.text.isEmpty) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return CupertinoAlertDialog(
-            title: Text("خطأ"),
-            content: Text("الرجاء إدخال اسم المستخدم وكلمة المرور."),
-            actions: [
-              CupertinoDialogAction(
-                child: Text("موافق"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-      return;
+      return showErrorDialog("الرجاء إدخال اسم المستخدم وكلمة المرور.");
     }
-    loading = true;
-    setState(() {});
+
+    setState(() => loading = true);
+
     try {
       var response = await _crud.postrequest(
         linkLogin,
         {"username": username.text, "password": password.text},
       );
-      setState(() {
-        loading = false;
-      });
+
+      setState(() => loading = false);
 
       if (response == null) {
-        print("the inputs are wrong");
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return CupertinoAlertDialog(
-              title: Text("خطأ"),
-              content: Text("اسم المستخدم أو كلمة المرور غير صحيحة."),
-              actions: [
-                CupertinoDialogAction(
-                  child: Text("موافق"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-        return;
+        return showErrorDialog("اسم المستخدم أو كلمة المرور غير صحيحة.");
       }
+
       if (response.containsKey('user') && response.containsKey('token')) {
-        await Future.delayed(Duration(seconds: 2));
-        String token = response['token'];
-        await _crud.saveToken(token);
-        Navigator.of(context).pushReplacementNamed('/homet');
+        await _crud.saveToken(response['token']);
+        Navigator.of(context).pushReplacementNamed('/home');
       } else {
-        print("حدث خطأ غير معروف: $response");
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return CupertinoAlertDialog(
-              title: Text("خطأ"),
-              content: Text("حدث خطأ غير معروف. الرجاء المحاولة لاحقًا."),
-              actions: [
-                CupertinoDialogAction(
-                  child: Text("موافق"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
+        return showErrorDialog("حدث خطأ غير معروف. الرجاء المحاولة لاحقًا.");
       }
     } catch (e) {
-      print("Error: $e");
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return CupertinoAlertDialog(
-            title: Text("خطأ"),
-            content: Text("تعذر الاتصال بالخادم. الرجاء المحاولة لاحقًا."),
-            actions: [
-              CupertinoDialogAction(
-                child: Text("موافق"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      setState(() => loading = false);
+      return showErrorDialog("تعذر الاتصال بالخادم. الرجاء المحاولة لاحقًا.");
     }
+  }
+
+  void showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text("خطأ"),
+          content: Text(message),
+          actions: [
+            CupertinoDialogAction(
+              child: Text("موافق"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
