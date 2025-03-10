@@ -10,6 +10,7 @@ import 'package:graduation_project/view/splash_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graduation_project/view/profile_screen.dart';
 import 'package:graduation_project/widgets/bottom_nav.dart';
+import 'package:graduation_project/widgets/test.dart';
 import 'widgets/post_widegt.dart';
 
 void main() {
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
         locale: Locale("ar", "AE"),
         initialRoute: "/",
         routes: {
-          "/": (context) => LogingScreen(),
+          "/": (context) => Homescreen(),
           "/splash": (context) => SplashScreen(),
           "/login": (context) => LogingScreen(),
           "/home": (context) => Homescreen(),
