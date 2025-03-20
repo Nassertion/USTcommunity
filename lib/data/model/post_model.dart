@@ -32,24 +32,42 @@ class Post {
       required this.comments});
 
   factory Post.fromJson(Map<String, dynamic> json) {
-    return Post(
-      id: json['id'] ?? 0, // تأكد من أن id ليس null
-      userId: json['user_id'] ?? 0, // تأكد من أن userId ليس null
-      title: json['title']?.toString() ?? "", // تجنب القيم null في النصوص
-      body: json['body'] ?? "",
-      attachmentUrl: json['attachment_url']?.toString() ?? "",
-      createdAt: json['created_at'] ?? "",
-      updatedAt: json['updated_at'] ?? "",
-      isLiked: json['isLiked'] ?? false, // تأكد من أن isLiked قيمة صحيحة
-      likes: json['likes'] ?? 0, // تأكد من أن likes ليس null
-      user: json['user'] != null
-          ? User.fromJson(json['user'])
-          : User.defaultUser(),
-      comments: json['comments'] != null
-          ? (json['comments'] as List)
-              .map((comment) => Comment.fromJson(comment))
-              .toList()
-          : [],
-    );
+    try {
+      return Post(
+        id: json['id'] ?? 0,
+        userId: json['user_id'] ?? 0,
+        title: json['title']?.toString() ?? "",
+        body: json['body']?.toString() ?? "",
+        attachmentUrl: json['attachment_url']?.toString() ?? "",
+        createdAt: json['created_at'] ?? "",
+        updatedAt: json['updated_at'] ?? "",
+        isLiked:
+            json['isLiked'] is bool ? json['isLiked'] : (json['isLiked'] == 1),
+        likes: json['likes'] ?? 0,
+        user: json['user'] != null
+            ? User.fromJson(json['user'])
+            : User.defaultUser(),
+        comments: (json['comments'] is List)
+            ? (json['comments'] as List)
+                .map((comment) => Comment.fromJson(comment))
+                .toList()
+            : [],
+      );
+    } catch (e) {
+      print("❌ خطأ في `Post.fromJson()`: $e");
+      return Post(
+        id: 0,
+        userId: 0,
+        title: "",
+        body: "",
+        attachmentUrl: "",
+        createdAt: "",
+        updatedAt: "",
+        isLiked: false,
+        likes: 0,
+        user: User.defaultUser(),
+        comments: [],
+      );
+    }
   }
 }

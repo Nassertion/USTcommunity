@@ -43,7 +43,7 @@ class _LogingScreenState extends State<LogingScreen> {
 
       if (response.containsKey('user') && response.containsKey('token')) {
         await _crud.saveToken(response['token']);
-        Navigator.of(context).pushReplacementNamed('/home');
+        Navigator.of(context).pushReplacementNamed('/tabs');
       } else {
         return showErrorDialog("حدث خطأ غير معروف. الرجاء المحاولة لاحقًا.");
       }

@@ -4,13 +4,18 @@ import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/widgets/bottom_nav.dart';
 
-class Postcreationscreen extends StatelessWidget {
+class Postcreationscreen extends StatefulWidget {
   const Postcreationscreen({super.key});
 
   @override
+  State<Postcreationscreen> createState() => _PostcreationscreenState();
+}
+
+class _PostcreationscreenState extends State<Postcreationscreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppBar("انشاء منشور"),
+      appBar: customAppBar("انشاء منشور", null),
       body: SafeArea(
         child: Container(
           alignment: Alignment.center,

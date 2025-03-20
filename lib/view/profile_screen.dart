@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
+import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/widgets/bottom_nav.dart';
-import 'package:graduation_project/widgets/test.dart';
 
 class Profilescreen extends StatefulWidget {
   const Profilescreen({super.key});
@@ -21,10 +22,29 @@ class _ProfilescreenState extends State<Profilescreen>
     _tabController = TabController(length: 3, vsync: this);
   }
 
+  Future<void> logout(BuildContext context) async {
+    final response = await crud.postrequest(linklogout, {});
+
+    if (response != null) {
+      print("Logout successful");
+      await crud.deleteToken(); // حذف التوكن محليًا
+      Navigator.of(context)
+          .pushReplacementNamed('/login'); // إعادة التوجيه لصفحة تسجيل الدخول
+    } else {
+      print("Logout failed");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppBar("الملف الشخصي "),
+      appBar: customAppBar(
+          "الملف الشخصي ",
+          IconButton(
+              onPressed: () {
+                logout(context);
+              },
+              icon: Icon(Icons.logout))),
       body: Column(
         children: [
           Container(
@@ -110,11 +130,6 @@ class _ProfilescreenState extends State<Profilescreen>
               ],
             ),
           ),
-          TextButton(
-              onPressed: () {
-                test1();
-              },
-              child: Icon(Icons.import_contacts))
         ],
       ),
     );

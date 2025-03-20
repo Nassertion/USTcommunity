@@ -3,13 +3,18 @@ import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/widgets/bottom_nav.dart';
 
-class Notifacationscreen extends StatelessWidget {
+class Notifacationscreen extends StatefulWidget {
   const Notifacationscreen({super.key});
 
   @override
+  State<Notifacationscreen> createState() => _NotifacationscreenState();
+}
+
+class _NotifacationscreenState extends State<Notifacationscreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppBar("الاشعارات"),
+      appBar: customAppBar("الاشعارات", null),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

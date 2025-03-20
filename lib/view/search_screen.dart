@@ -3,13 +3,18 @@ import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/widgets/bottom_nav.dart';
 
-class Searchscreen extends StatelessWidget {
+class Searchscreen extends StatefulWidget {
   const Searchscreen({super.key});
 
   @override
+  State<Searchscreen> createState() => _SearchscreenState();
+}
+
+class _SearchscreenState extends State<Searchscreen> {
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppBar("البحث"),
+      appBar: customAppBar("البحث", null),
       body: Container(
         height: 200,
         width: 350,

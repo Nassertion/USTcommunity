@@ -38,30 +38,86 @@ class Crud {
       print("Error deleting token: $e");
     }
   }
+// api_service.dart
 
-  Future<dynamic> getrequest(String uri) async {
+  // ... (الكود السابق)
+
+  Future<dynamic> toggleLike(int postId, bool isLiked) async {
     try {
       final token = await getToken();
+      final Map<String, String> headers = {
+        'Authorization': token != null ? 'Bearer $token' : '',
+        'Accept': 'application/json',
+      };
 
-      final Map<String, String> headers =
-          token != null ? {'Authorization': 'Bearer $token'} : {};
+      final String endpoint = isLiked
+          ? "${linkServerName}api/v1/unlike/$postId" // إلغاء الإعجاب
+          : "${linkServerName}api/v1/like/$postId"; // الإعجاب
 
-      final response = await http.get(Uri.parse(uri), headers: headers);
+      final response = await http.delete(
+        Uri.parse(endpoint),
+        headers: headers,
+      );
+      print("📥 استجابة الخادم: ${response.body}"); // طباعة الاستجابة الكاملة
+
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         return responseBody;
       } else {
-        print('Error ${response.statusCode}: ${response.body}');
+        print('❌ خطأ ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      print("Error catch ${e}");
+      print("❌ خطأ catch ${e}");
+    }
+  }
+
+  // Future<dynamic> getrequest(String uri) async {
+  //   try {
+  //     final token = await getToken();
+
+  //     final Map<String, String> headers =
+  //         token != null ? {'Authorization': 'Bearer $token'} : {};
+
+  //     final response = await http.get(Uri.parse(uri), headers: headers);
+  //     if (response.statusCode == 200) {
+  //       final responseBody = jsonDecode(response.body);
+  //       return responseBody;
+  //     } else {
+  //       print('Error ${response.statusCode}: ${response.body}');
+  //     }
+  //   } catch (e) {
+  //     print("Error catch ${e}");
+  //   }
+  // }
+  Future<dynamic> getrequest(String uri) async {
+    try {
+      final token = await getToken();
+
+      final Map<String, String> headers = {
+        'Authorization': token != null ? 'Bearer $token' : '',
+        'Accept': 'application/json', // إجبار API على إرجاع JSON
+      };
+
+      print("📡 طلب API: $uri");
+      print("🔑 التوكن المرسل: $token");
+
+      final response = await http.get(Uri.parse(uri), headers: headers);
+      print("📥 استجابة HTTP: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        return responseBody;
+      } else {
+        print('❌ خطأ ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print("❌ خطأ catch ${e}");
     }
   }
 
   Future<dynamic> postrequest(String uri, Map<String, dynamic> data) async {
     try {
       final token = await getToken();
-
       final Map<String, String> headers =
           token != null ? {'Authorization': 'Bearer $token'} : {};
 
