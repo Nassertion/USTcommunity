@@ -1,4 +1,5 @@
 import 'package:graduation_project/constant/ConstantLinks.dart';
+import 'package:graduation_project/view/comments_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
@@ -100,8 +101,8 @@ class _HomescreenState extends State<Homescreen> {
     print("📢 جاري تحميل البيانات... الصفحة: $page");
 
     try {
-      var response = await crud.getrequest(
-          "http://192.168.100.34:8000/api/v1/posts?page=$page&limit=$limit");
+      var response =
+          await crud.getrequest("${linkPost}?page=$page&limit=$limit");
 
       print("✅ استجابة API الأولية: ${response}");
 
@@ -202,7 +203,16 @@ class _HomescreenState extends State<Homescreen> {
                             ),
                           ),
                           IconButton(
-                              onPressed: () {}, icon: Icon(Icons.message)),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        CommentsScreen(post: post),
+                                  ),
+                                );
+                              },
+                              icon: Icon(Icons.message)),
                           IconButton(
                               onPressed: () {}, icon: Icon(Icons.repeat)),
                           IconButton(

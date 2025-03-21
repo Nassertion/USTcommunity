@@ -1,4 +1,4 @@
-const String linkServerName = "http://192.168.100.34:8000/";
+const String linkServerName = "http://192.168.100.4:8000/";
 
 //auth
 const String linkLogin = "${linkServerName}api/v1/login";

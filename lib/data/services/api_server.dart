@@ -118,19 +118,36 @@ class Crud {
   Future<dynamic> postrequest(String uri, Map<String, dynamic> data) async {
     try {
       final token = await getToken();
-      final Map<String, String> headers =
-          token != null ? {'Authorization': 'Bearer $token'} : {};
+      final Map<String, String> headers = {
+        'Authorization': token != null ? 'Bearer $token' : '',
+        'Accept': 'application/json',
+        'Content-Type':
+            'application/json', // إضافة هذا السطر إذا كان الخادم يتوقع JSON
+      };
 
-      final response =
-          await http.post(Uri.parse(uri), headers: headers, body: data);
-      if (response.statusCode == 200) {
+      print("📡 طلب API: $uri");
+      print("🔑 التوكن المرسل: $token");
+      print("📦 البيانات المرسلة: $data");
+
+      final response = await http.post(
+        Uri.parse(uri),
+        headers: headers,
+        body: jsonEncode(data), // تأكد من أن البيانات مرسلة كـ JSON
+      );
+
+      print("📥 استجابة HTTP: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // قبول كود الحالة 200 و 201
         final responseBody = jsonDecode(response.body);
         return responseBody;
       } else {
-        print('Error ${response.statusCode}: ${response.body}');
+        print('❌ خطأ ${response.statusCode}: ${response.body}');
+        return null;
       }
     } catch (e) {
-      print("Error catch ${e}");
+      print("❌ خطأ catch ${e}");
+      return null;
     }
   }
 
