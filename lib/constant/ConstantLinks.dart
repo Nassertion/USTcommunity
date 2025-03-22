@@ -5,4 +5,4 @@ const String linkLogin = "${linkServerName}api/v1/login/";
 const String linklogout = "${linkServerName}api/v1/logout/";
 const String linkPost = "${linkServerName}api/v1/posts/";
 const String linkLike = "${linkServerName}api/v1/like/";
-const String linkUnike = "${linkServerName}api/v1/unlike/";
+const String linkUnlike = "${linkServerName}api/v1/unlike/";

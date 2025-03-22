@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/widgets/readmore.dart';
+import 'package:graduation_project/widgets/save_widget.dart';
 import 'package:graduation_project/widgets/share_widget.dart';
 import "../data/model/post_model.dart";
 import 'package:graduation_project/widgets/time_widget.dart';
@@ -25,14 +26,15 @@ class _HomescreenState extends State<Homescreen> {
 
   Map<int, bool> likedPosts = {};
   Map<int, bool> savedPosts = {};
+
   Future<void> toggleLike(int postId, bool isLiked) async {
     try {
       print(
           "🔄 جاري ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} على المنشور: $postId");
 
-      final response = await crud.toggleLike(postId, isLiked);
+      final success = await crud.toggleLike(postId, isLiked);
 
-      if (response != null && response['success'] == true) {
+      if (success) {
         setState(() {
           likedPosts[postId] = !isLiked; // تحديث حالة الإعجاب
         });
@@ -52,6 +54,13 @@ class _HomescreenState extends State<Homescreen> {
     super.initState();
     fetchPosts();
     _scrollController.addListener(_onScroll);
+
+    // جلب حالة الحفظ المحفوظة
+    getSavedPosts().then((savedSavedPosts) {
+      setState(() {
+        savedPosts = savedSavedPosts;
+      });
+    });
   }
 
   Future<void> fetchPosts() async {
@@ -77,6 +86,11 @@ class _HomescreenState extends State<Homescreen> {
         setState(() {
           posts.addAll(newPosts);
           page++; // زيادة رقم الصفحة
+
+          // تحديث حالة الإعجاب بناءً على البيانات من الخادم
+          for (var post in newPosts) {
+            likedPosts[post.id] = post.isLiked ?? false;
+          }
         });
       } else {
         print(" خطأ: البيانات المستلمة ليست قائمة. الاستجابة: $response");
@@ -180,10 +194,17 @@ class _HomescreenState extends State<Homescreen> {
                               },
                               icon: Icon(Icons.share)),
                           IconButton(
-                            onPressed: () {
+                            onPressed: () async {
                               setState(() {
-                                savedPosts[post.id] = !isSaved;
+                                savedPosts[post.id] =
+                                    !isSaved; // تحديث حالة الحفظ
                               });
+
+                              // حفظ حالة الحفظ الجديدة
+                              await saveSavedPosts(savedPosts);
+
+                              print(
+                                  "✅ تم ${isSaved ? "إلغاء الحفظ" : "الحفظ"} بنجاح على المنشور: ${post.id}");
                             },
                             icon: Icon(
                               isSaved ? Icons.bookmark : Icons.bookmark_border,

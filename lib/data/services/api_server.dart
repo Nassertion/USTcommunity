@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
 Crud crud = Crud();
 
 class Crud {
@@ -36,36 +35,46 @@ class Crud {
     }
   }
 
-  Future<dynamic> toggleLike(int postId, bool isLiked) async {
+  Future<bool> toggleLike(int postId, bool isLiked) async {
     try {
       final token = await getToken();
       final Map<String, String> headers = {
         'Authorization': token != null ? 'Bearer $token' : '',
         'Accept': 'application/json',
-        'Content-Type': 'application/json', // إضافة Content-Type
+        'Content-Type': 'application/json',
       };
 
       final String endpoint =
-          isLiked ? "${linkUnike}$postId" : "${linkLike}/$postId";
+          isLiked ? "${linkUnlike}$postId" : "${linkLike}$postId";
 
-      final response = await http.post(
-        // استخدام POST بدلاً من DELETE
-        Uri.parse(endpoint),
-        headers: headers,
-      );
+      final response = isLiked
+          ? await http.delete(Uri.parse(endpoint),
+              headers: headers) // استخدام DELETE
+          : await http.put(Uri.parse(endpoint),
+              headers: headers); // استخدام PUT
 
       print("📥 استجابة الخادم: ${response.body}");
+      print(
+          "🔄 جاري ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} على المنشور: $postId");
+      print("📤 الرابط: $endpoint");
+      print("📤 التوكن: $token");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseBody = jsonDecode(response.body);
-        return responseBody;
+        if (responseBody['message'] == "like has been added" ||
+            responseBody['message'] == "like has been deleted") {
+          return true; // العملية ناجحة
+        } else {
+          print('❌ رسالة غير متوقعة من الخادم: ${response.body}');
+          return false;
+        }
       } else {
         print('❌ خطأ ${response.statusCode}: ${response.body}');
-        return null;
+        return false;
       }
     } catch (e) {
       print("❌ خطأ أثناء الإعجاب/إلغاء الإعجاب: $e");
-      return null;
+      return false;
     }
   }
 
