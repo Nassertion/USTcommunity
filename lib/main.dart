@@ -7,10 +7,8 @@ import 'package:graduation_project/view/notifacation_screen.dart';
 import 'package:graduation_project/view/post_creation_screen.dart';
 import 'package:graduation_project/view/search_screen.dart';
 import 'package:graduation_project/view/splash_screen.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graduation_project/view/profile_screen.dart';
 import 'package:graduation_project/widgets/bottom_nav.dart';
-import 'widgets/post_widegt.dart';
 
 void main() {
   runApp(MyApp());
@@ -40,11 +38,10 @@ class MyApp extends StatelessWidget {
         locale: Locale("ar", "AE"),
         initialRoute: "/",
         routes: {
-          "/": (context) => HomeScreenWithNav(),
+          "/": (context) => SplashScreen(),
           "/splash": (context) => SplashScreen(),
           "/login": (context) => LogingScreen(),
           "/home": (context) => Homescreen(),
-          "/idk": (context) => Idk(),
           "notification": (context) => Notifacationscreen(),
           "/postcreate": (context) => Postcreationscreen(),
           "/profile": (context) => Profilescreen(),

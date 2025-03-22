@@ -1,15 +1,12 @@
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/view/comments_screen.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
-import 'package:graduation_project/data/model/user_model.dart';
 import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/widgets/readmore.dart';
-import '../widgets/bottom_nav.dart';
+import 'package:graduation_project/widgets/share_widget.dart';
 import "../data/model/post_model.dart";
-import 'package:share_plus/share_plus.dart'; // لمشاركة الرابط
-import 'package:flutter/services.dart'; // لنسخ الرابط إلى الحافظة
+import 'package:graduation_project/widgets/time_widget.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -20,98 +17,61 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   Crud crud = Crud();
-  List<Post> posts = []; // قائمة لتخزين البوستات
-  bool isLoading = false; // حالة التحميل
-  int page = 1; // رقم الصفحة الحالية
-  final int limit = 10; // عدد المنشورات لكل طلب
-  final ScrollController _scrollController =
-      ScrollController(); // متحكم التمرير
+  List<Post> posts = [];
+  bool isLoading = false;
+  int page = 1;
+  final int limit = 10;
+  final ScrollController _scrollController = ScrollController();
 
-  // حالة لتتبع الإعجاب والحفظ لكل منشور
   Map<int, bool> likedPosts = {};
   Map<int, bool> savedPosts = {};
   Future<void> toggleLike(int postId, bool isLiked) async {
     try {
-      // إرسال طلب لتحديث حالة الإعجاب
+      print(
+          "🔄 جاري ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} على المنشور: $postId");
+
       final response = await crud.toggleLike(postId, isLiked);
 
       if (response != null && response['success'] == true) {
-        // إذا نجح الطلب، نقوم بتحديث الواجهة
         setState(() {
-          likedPosts[postId] = !isLiked;
+          likedPosts[postId] = !isLiked; // تحديث حالة الإعجاب
         });
+        print(
+            "✅ تم ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} بنجاح على المنشور: $postId");
       } else {
-        print("❌ فشل في تحديث حالة الإعجاب");
+        print(
+            "❌ فشل في ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} على المنشور: $postId");
       }
     } catch (e) {
-      print("❌ خطأ أثناء تحديث حالة الإعجاب: $e");
-    }
-  }
-
-  Future<void> sharePost(int postId) async {
-    try {
-      // إنشاء رابط المنشور
-      final String postUrl = "${linkServerName}api/v1/posts/$postId";
-
-      // مشاركة الرابط
-      await Share.share(postUrl);
-
-      print("✅ تم مشاركة الرابط: $postUrl");
-    } catch (e) {
-      print("❌ خطأ أثناء مشاركة الرابط: $e");
-    }
-  }
-
-  Future<void> copyToClipboard(String text) async {
-    try {
-      await Clipboard.setData(ClipboardData(text: text));
-      print("✅ تم نسخ الرابط إلى الحافظة: $text");
-    } catch (e) {
-      print("❌ خطأ أثناء نسخ الرابط: $e");
+      print("❌ خطأ أثناء ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"}: $e");
     }
   }
 
   @override
   void initState() {
     super.initState();
-    fetchPosts(); // تحميل أول 10 منشورات عند فتح الصفحة
-    _scrollController.addListener(_onScroll); // مراقبة التمرير لتحميل المزيد
+    fetchPosts();
+    _scrollController.addListener(_onScroll);
   }
 
-  String formatPostDate(String dateString) {
-    DateTime postDate = DateTime.parse(dateString);
-    DateTime now = DateTime.now();
-
-    // التحقق مما إذا كان الفرق أكثر من سنة
-    if (now.year != postDate.year) {
-      return "${postDate.year}";
-    }
-
-    // عرض اليوم + الشهر كتابة
-    String formattedDate =
-        "${postDate.day} ${DateFormat('MMMM', 'ar').format(postDate)}";
-    return formattedDate;
-  }
-
-  /// **📌 جلب المنشورات من API**
   Future<void> fetchPosts() async {
-    if (isLoading) return; // منع تكرار التحميل
+    if (isLoading) return;
 
     setState(() => isLoading = true);
-    print("📢 جاري تحميل البيانات... الصفحة: $page");
+    print(" جاري تحميل البيانات الصفحة: $page");
 
     try {
       var response =
           await crud.getrequest("${linkPost}?page=$page&limit=$limit");
 
-      print("✅ استجابة API الأولية: ${response}");
+      print(" استجابة API الأولية: ${response}");
 
       if (response != null && response is List) {
         List<Post> newPosts =
             response.map((data) => Post.fromJson(data)).toList();
 
         if (newPosts.isEmpty) {
-          print("⚠️ لا يوجد منشورات جديدة");
+          print(" لا يوجد منشورات جديدة");
         }
 
         setState(() {
@@ -119,16 +79,15 @@ class _HomescreenState extends State<Homescreen> {
           page++; // زيادة رقم الصفحة
         });
       } else {
-        print("❌ خطأ: البيانات المستلمة ليست قائمة. الاستجابة: $response");
+        print(" خطأ: البيانات المستلمة ليست قائمة. الاستجابة: $response");
       }
     } catch (e) {
-      print("❌ خطأ أثناء جلب المنشورات: $e");
+      print(" خطأ أثناء جلب المنشورات: $e");
     }
 
     setState(() => isLoading = false);
   }
 
-  /// **📌 تحميل المزيد عند الاقتراب من نهاية القائمة**
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
@@ -138,7 +97,7 @@ class _HomescreenState extends State<Homescreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose(); // تنظيف المتحكم عند إغلاق الصفحة
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -151,7 +110,7 @@ class _HomescreenState extends State<Homescreen> {
             ? (isLoading
                 ? Center(child: CircularProgressIndicator(color: kPrimaryolor))
                 : Center(
-                    child: Text("لا توجد منشورات 😕",
+                    child: Text("لا توجد منشورات ",
                         style: TextStyle(fontSize: 18))))
             : ListView.builder(
                 controller: _scrollController,
@@ -164,7 +123,6 @@ class _HomescreenState extends State<Homescreen> {
 
                   Post post = posts[index];
 
-                  // التحقق من حالة الإعجاب والحفظ لهذا المنشور
                   bool isLiked = likedPosts[post.id] ?? false;
                   bool isSaved = savedPosts[post.id] ?? false;
 
@@ -175,7 +133,7 @@ class _HomescreenState extends State<Homescreen> {
                           backgroundImage: post.user.imageUrl != null &&
                                   post.user.imageUrl!.isNotEmpty
                               ? NetworkImage(post.user.imageUrl!)
-                              : AssetImage("assets/images/test.png")
+                              : AssetImage("assets/images/user.png")
                                   as ImageProvider,
                           backgroundColor: Colors.black,
                         ),
@@ -217,8 +175,7 @@ class _HomescreenState extends State<Homescreen> {
                               onPressed: () {}, icon: Icon(Icons.repeat)),
                           IconButton(
                               onPressed: () {
-                                String postUrl =
-                                    "${linkServerName}api/v1/posts/${post.id}";
+                                String postUrl = "${linkPost}${post.id}";
                                 sharePost(post.id);
                               },
                               icon: Icon(Icons.share)),

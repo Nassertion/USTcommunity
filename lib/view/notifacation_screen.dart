@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
-import 'package:graduation_project/widgets/bottom_nav.dart';
 
 class Notifacationscreen extends StatefulWidget {
   const Notifacationscreen({super.key});

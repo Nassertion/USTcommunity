@@ -21,9 +21,9 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? 0, // إذا لم يكن هناك ID، اجعله 0
+      id: json['id'] ?? 0,
       userId: json['user_id'] ?? 0,
-      displayName: json['displayName'] ?? "مستخدم مجهول", // قيمة افتراضية
+      displayName: json['displayName'] ?? "مستخدم مجهول",
       majorId: json['major_id'] ?? 0,
       level: json['level'] ?? 0,
       branch: json['branch'] ?? "غير محدد",
@@ -32,7 +32,6 @@ class User {
     );
   }
 
-  /// **🔹 دالة لإنشاء مستخدم افتراضي**
   static User defaultUser() {
     return User(
       id: 0,

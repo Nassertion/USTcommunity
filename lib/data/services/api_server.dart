@@ -1,11 +1,8 @@
 //api_service.dart
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import "../model/post_model.dart";
 
 Crud crud = Crud();
 
@@ -38,9 +35,6 @@ class Crud {
       print("Error deleting token: $e");
     }
   }
-// api_service.dart
-
-  // ... (الكود السابق)
 
   Future<dynamic> toggleLike(int postId, bool isLiked) async {
     try {
@@ -48,70 +42,56 @@ class Crud {
       final Map<String, String> headers = {
         'Authorization': token != null ? 'Bearer $token' : '',
         'Accept': 'application/json',
+        'Content-Type': 'application/json', // إضافة Content-Type
       };
 
-      final String endpoint = isLiked
-          ? "${linkServerName}api/v1/unlike/$postId" // إلغاء الإعجاب
-          : "${linkServerName}api/v1/like/$postId"; // الإعجاب
+      final String endpoint =
+          isLiked ? "${linkUnike}$postId" : "${linkLike}/$postId";
 
-      final response = await http.delete(
+      final response = await http.post(
+        // استخدام POST بدلاً من DELETE
         Uri.parse(endpoint),
         headers: headers,
       );
-      print("📥 استجابة الخادم: ${response.body}"); // طباعة الاستجابة الكاملة
 
-      if (response.statusCode == 200) {
+      print("📥 استجابة الخادم: ${response.body}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final responseBody = jsonDecode(response.body);
         return responseBody;
       } else {
         print('❌ خطأ ${response.statusCode}: ${response.body}');
+        return null;
       }
     } catch (e) {
-      print("❌ خطأ catch ${e}");
+      print("❌ خطأ أثناء الإعجاب/إلغاء الإعجاب: $e");
+      return null;
     }
   }
 
-  // Future<dynamic> getrequest(String uri) async {
-  //   try {
-  //     final token = await getToken();
-
-  //     final Map<String, String> headers =
-  //         token != null ? {'Authorization': 'Bearer $token'} : {};
-
-  //     final response = await http.get(Uri.parse(uri), headers: headers);
-  //     if (response.statusCode == 200) {
-  //       final responseBody = jsonDecode(response.body);
-  //       return responseBody;
-  //     } else {
-  //       print('Error ${response.statusCode}: ${response.body}');
-  //     }
-  //   } catch (e) {
-  //     print("Error catch ${e}");
-  //   }
-  // }
   Future<dynamic> getrequest(String uri) async {
     try {
       final token = await getToken();
 
       final Map<String, String> headers = {
         'Authorization': token != null ? 'Bearer $token' : '',
-        'Accept': 'application/json', // إجبار API على إرجاع JSON
+        'Accept': 'application/json',
       };
 
-      print("📡 طلب API: $uri");
-      print("🔑 التوكن المرسل: $token");
+      print(" طلب API: $uri");
+      print(" التوكن المرسل: $token");
 
       final response = await http.get(Uri.parse(uri), headers: headers);
-      print("📥 استجابة HTTP: ${response.body}");
+      print(" استجابة HTTP: ${response.body}");
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         return responseBody;
       } else {
-        print('❌ خطأ ${response.statusCode}: ${response.body}');
+        print(' خطأ ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      print("❌ خطأ catch ${e}");
+      print(" خطأ catch ${e}");
     }
   }
 
@@ -121,41 +101,31 @@ class Crud {
       final Map<String, String> headers = {
         'Authorization': token != null ? 'Bearer $token' : '',
         'Accept': 'application/json',
-        'Content-Type':
-            'application/json', // إضافة هذا السطر إذا كان الخادم يتوقع JSON
+        'Content-Type': 'application/json',
       };
 
-      print("📡 طلب API: $uri");
-      print("🔑 التوكن المرسل: $token");
-      print("📦 البيانات المرسلة: $data");
+      print(" طلب API: $uri");
+      print(" التوكن المرسل: $token");
+      print(" البيانات المرسلة: $data");
 
       final response = await http.post(
         Uri.parse(uri),
         headers: headers,
-        body: jsonEncode(data), // تأكد من أن البيانات مرسلة كـ JSON
+        body: jsonEncode(data),
       );
 
-      print("📥 استجابة HTTP: ${response.body}");
+      print(" استجابة HTTP: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // قبول كود الحالة 200 و 201
         final responseBody = jsonDecode(response.body);
         return responseBody;
       } else {
-        print('❌ خطأ ${response.statusCode}: ${response.body}');
+        print(' خطأ ${response.statusCode}: ${response.body}');
         return null;
       }
     } catch (e) {
-      print("❌ خطأ catch ${e}");
+      print(" خطأ catch ${e}");
       return null;
     }
   }
-
-//   // // وظيفة لاختبار التخزين
-//   Future<void> testTokenHandling() async {
-//     await saveToken("sample_token");
-//     final token = await getToken();
-//     print("Retrieved token: $token");
-//     await deleteToken();
-//   }
 }

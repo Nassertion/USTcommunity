@@ -3,7 +3,6 @@ import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
-import 'package:graduation_project/widgets/bottom_nav.dart';
 
 class Profilescreen extends StatefulWidget {
   const Profilescreen({super.key});

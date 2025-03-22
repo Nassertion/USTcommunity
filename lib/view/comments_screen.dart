@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/ConstantLinks.dart';
+import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/model/comment_model.dart';
 import 'package:graduation_project/data/model/post_model.dart';
 import 'package:graduation_project/data/services/api_server.dart';
@@ -26,30 +27,29 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
     try {
       final response = await Crud().postrequest(
-        "${linkServerName}api/v1/posts/${widget.post.id}/comments",
+        "${linkPost}${widget.post.id}/comments",
         {
           'body': commentText,
         },
       );
 
-      print("📥 استجابة الخادم: $response");
+      print(" استجابة الخادم: $response");
 
       if (response != null) {
         if (response['success'] == true || response['id'] != null) {
-          // تأكد من وجود 'success' أو 'id'
           setState(() {
             widget.post.comments.add(Comment.fromJson(response));
           });
           _commentController.clear();
         } else {
           print(
-              "❌ فشل في إضافة التعليق: ${response['message'] ?? 'لا توجد رسالة'}");
+              " فشل في إضافة التعليق: ${response['message'] ?? 'لا توجد رسالة'}");
         }
       } else {
-        print("❌ فشل في الحصول على استجابة من الخادم");
+        print(" فشل في الحصول على استجابة من الخادم");
       }
     } catch (e) {
-      print("❌ خطأ أثناء إضافة التعليق: $e");
+      print(" خطأ أثناء إضافة التعليق: $e");
     }
 
     setState(() => isLoading = false);
@@ -89,6 +89,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
                 IconButton(
                   onPressed: isLoading ? null : addComment,
                   icon: Icon(Icons.send),
+                  color: kPrimaryolor,
                 ),
               ],
             ),

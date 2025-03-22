@@ -16,13 +16,12 @@ class HomeScreenWithNav extends StatefulWidget {
 class _HomeScreenWithNavState extends State<HomeScreenWithNav> {
   int _selectedIndex = 0;
 
-  // قائمة الصفحات المرتبطة بكل عنصر من عناصر الـ BottomNavigationBar
   final List<Widget> _pages = [
-    Homescreen(), // الصفحة الرئيسية
-    Searchscreen(), // صفحة البحث
-    Postcreationscreen(), // صفحة إضافة منشور
-    Notifacationscreen(), // صفحة الإشعارات
-    Profilescreen(), // صفحة الحساب
+    Homescreen(),
+    Searchscreen(),
+    Postcreationscreen(),
+    Notifacationscreen(),
+    Profilescreen(),
   ];
 
   // دالة للتبديل بين الصفحات
@@ -42,7 +41,7 @@ class _HomeScreenWithNavState extends State<HomeScreenWithNav> {
       bottomNavigationBar: BottomNavigationBar(
         type:
             BottomNavigationBarType.fixed, // لعرض جميع العناصر في الشريط السفلي
-        backgroundColor: kPrimaryolor, // اللون الخلفي للشريط
+        backgroundColor: kPrimaryolor,
         selectedItemColor:
             const Color.fromARGB(255, 254, 223, 112), // لون العنصر المحدد
         unselectedItemColor: kBackgroundColor, // لون العناصر غير المحددة

@@ -54,7 +54,7 @@ class Post {
             : [],
       );
     } catch (e) {
-      print("❌ خطأ في `Post.fromJson()`: $e");
+      print(" خطأ في `Post.fromJson()`: $e");
       return Post(
         id: 0,
         userId: 0,
