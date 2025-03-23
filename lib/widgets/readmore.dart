@@ -5,9 +5,12 @@ class ExpandableContent extends StatefulWidget {
   final String? imageUrl;
   final int maxLines;
 
-  const ExpandableContent(
-      {Key? key, required this.text, this.imageUrl, this.maxLines = 3})
-      : super(key: key);
+  const ExpandableContent({
+    Key? key,
+    required this.text,
+    this.imageUrl,
+    this.maxLines = 3,
+  }) : super(key: key);
 
   @override
   _ExpandableContentState createState() => _ExpandableContentState();
@@ -21,18 +24,24 @@ class _ExpandableContentState extends State<ExpandableContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.text,
-          maxLines: isExpanded ? null : widget.maxLines,
-          overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+        AnimatedCrossFade(
+          duration: const Duration(milliseconds: 300),
+          crossFadeState:
+              isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          firstChild: Text(
+            widget.text,
+            maxLines: widget.maxLines,
+            overflow: TextOverflow.ellipsis,
+          ),
+          secondChild: Text(
+            widget.text,
+          ),
         ),
-        // SizedBox(height: 5),
         if (widget.imageUrl != null)
           Image.asset(
             widget.imageUrl!,
             fit: BoxFit.cover,
           ),
-        // SizedBox(height: 10),
         GestureDetector(
           onTap: () {
             setState(() {
@@ -41,7 +50,8 @@ class _ExpandableContentState extends State<ExpandableContent> {
           },
           child: Text(
             isExpanded ? "إخفاء" : "اقرأ المزيد",
-            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: Colors.blue, fontWeight: FontWeight.bold),
           ),
         ),
       ],

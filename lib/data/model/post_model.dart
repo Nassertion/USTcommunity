@@ -70,4 +70,27 @@ class Post {
       );
     }
   }
+  Post copyWith({
+    int? id,
+    int? userId,
+    String? body,
+    String? createdAt,
+    String? updatedAt,
+    User? user,
+    bool? isLiked,
+    int? likes,
+    List<Comment>? comments,
+  }) {
+    return Post(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      body: body ?? this.body,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      user: user ?? this.user,
+      isLiked: isLiked ?? this.isLiked,
+      likes: likes ?? this.likes,
+      comments: comments ?? this.comments,
+    );
+  }
 }

@@ -169,22 +169,38 @@ class _HomescreenState extends State<Homescreen> {
                                 toggleLike(post.id, isLiked);
                               });
                             },
-                            icon: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? Colors.red : null,
+                            icon: Row(
+                              children: [
+                                Icon(
+                                  isLiked
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: isLiked ? Colors.red : null,
+                                ),
+                                SizedBox(width: 4), // مسافة بين الأيقونة والنص
+                                Text("${post.likes}"), // عدد الإعجابات
+                              ],
                             ),
                           ),
                           IconButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        CommentsScreen(post: post),
-                                  ),
-                                );
-                              },
-                              icon: Icon(Icons.message)),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      CommentsScreen(post: post),
+                                ),
+                              );
+                            },
+                            icon: Row(
+                              children: [
+                                Icon(Icons.message),
+                                SizedBox(width: 4), // مسافة بين الأيقونة والنص
+                                Text(
+                                    "${post.comments.length}"), // عدد التعليقات
+                              ],
+                            ),
+                          ),
                           IconButton(
                               onPressed: () {}, icon: Icon(Icons.repeat)),
                           IconButton(

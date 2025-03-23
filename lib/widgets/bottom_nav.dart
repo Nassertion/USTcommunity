@@ -5,6 +5,7 @@ import 'package:graduation_project/view/post_creation_screen.dart';
 import 'package:graduation_project/view/profile_screen.dart';
 import 'package:graduation_project/view/search_screen.dart';
 import 'package:graduation_project/view/home_screen.dart';
+//bottom_nav_widget.dart
 
 class HomeScreenWithNav extends StatefulWidget {
   const HomeScreenWithNav({super.key});
