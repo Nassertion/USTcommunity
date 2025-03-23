@@ -1,12 +1,12 @@
-import 'package:graduation_project/constant/ConstantLinks.dart';
-import 'package:graduation_project/view/comments_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
+import 'package:graduation_project/data/model/post_model.dart';
 import 'package:graduation_project/data/services/api_server.dart';
+import 'package:graduation_project/view/comments_screen.dart';
 import 'package:graduation_project/widgets/readmore.dart';
 import 'package:graduation_project/widgets/save_widget.dart';
 import 'package:graduation_project/widgets/share_widget.dart';
-import "../data/model/post_model.dart";
 import 'package:graduation_project/widgets/time_widget.dart';
 
 class Homescreen extends StatefulWidget {
@@ -26,28 +26,6 @@ class _HomescreenState extends State<Homescreen> {
 
   Map<int, bool> likedPosts = {};
   Map<int, bool> savedPosts = {};
-
-  Future<void> toggleLike(int postId, bool isLiked) async {
-    try {
-      print(
-          "🔄 جاري ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} على المنشور: $postId");
-
-      final success = await crud.toggleLike(postId, isLiked);
-
-      if (success) {
-        setState(() {
-          likedPosts[postId] = !isLiked; // تحديث حالة الإعجاب
-        });
-        print(
-            "✅ تم ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} بنجاح على المنشور: $postId");
-      } else {
-        print(
-            "❌ فشل في ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} على المنشور: $postId");
-      }
-    } catch (e) {
-      print("❌ خطأ أثناء ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"}: $e");
-    }
-  }
 
   @override
   void initState() {
@@ -140,97 +118,129 @@ class _HomescreenState extends State<Homescreen> {
                   bool isLiked = likedPosts[post.id] ?? false;
                   bool isSaved = savedPosts[post.id] ?? false;
 
-                  return Column(
-                    children: [
-                      ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: post.user.imageUrl != null &&
-                                  post.user.imageUrl!.isNotEmpty
-                              ? NetworkImage(post.user.imageUrl!)
-                              : AssetImage("assets/images/user.png")
-                                  as ImageProvider,
-                          backgroundColor: Colors.black,
-                        ),
-                        title: Text("المستخدم ${post.userId}"),
-                        subtitle: Text(formatPostDate(post.createdAt)),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child:
-                            ExpandableContent(text: post.body ?? "بدون محتوى"),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  return Card(
+                    color: kBackgroundColor,
+                    margin: EdgeInsets.all(8), // هوامش حول الكارت
+                    elevation: 4, // ظل للكارت
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10), // زوايا مدورة
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(12), // هوامش داخل الكارت
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IconButton(
-                            onPressed: () {
-                              setState(() {
-                                likedPosts[post.id] = !isLiked;
-                                toggleLike(post.id, isLiked);
-                              });
-                            },
-                            icon: Row(
-                              children: [
-                                Icon(
-                                  isLiked
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: isLiked ? Colors.red : null,
-                                ),
-                                SizedBox(width: 4), // مسافة بين الأيقونة والنص
-                                Text("${post.likes}"), // عدد الإعجابات
-                              ],
+                          // رأس البوست (صورة المستخدم واسمه)
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: post.user.imageUrl != null &&
+                                      post.user.imageUrl!.isNotEmpty
+                                  ? NetworkImage(post.user.imageUrl!)
+                                  : AssetImage("assets/images/user.png")
+                                      as ImageProvider,
+                              backgroundColor: Colors.black,
                             ),
+                            title: Text("المستخدم ${post.userId}"),
+                            subtitle: Text(formatPostDate(post.createdAt)),
                           ),
-                          IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      CommentsScreen(post: post),
-                                ),
-                              );
-                            },
-                            icon: Row(
-                              children: [
-                                Icon(Icons.message),
-                                SizedBox(width: 4), // مسافة بين الأيقونة والنص
-                                Text(
-                                    "${post.comments.length}"), // عدد التعليقات
-                              ],
-                            ),
+                          // نص البوست
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: ExpandableContent(
+                                text: post.body ?? "بدون محتوى"),
                           ),
-                          IconButton(
-                              onPressed: () {}, icon: Icon(Icons.repeat)),
-                          IconButton(
-                              onPressed: () {
-                                String postUrl = "${linkPost}${post.id}";
-                                sharePost(post.id);
-                              },
-                              icon: Icon(Icons.share)),
-                          IconButton(
-                            onPressed: () async {
-                              setState(() {
-                                savedPosts[post.id] =
-                                    !isSaved; // تحديث حالة الحفظ
-                              });
+                          SizedBox(height: 10), // مسافة بين النص والأزرار
+                          // أزرار التفاعل (إعجاب، تعليق، مشاركة، حفظ)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              IconButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    likedPosts[post.id] =
+                                        !isLiked; // تحديث الحالة المحلية
+                                    post.likes +=
+                                        isLiked ? -1 : 1; // تحديث عدد الإعجابات
+                                  });
 
-                              // حفظ حالة الحفظ الجديدة
-                              await saveSavedPosts(savedPosts);
+                                  // إرسال الطلب إلى الخادم
+                                  final success = await crud.toggleLike(post.id,
+                                      isLiked); // استدعاء الدالة من Crud
+                                  if (!success) {
+                                    // إذا فشل الطلب، قم بإعادة الحالة إلى ما كانت عليه
+                                    setState(() {
+                                      likedPosts[post.id] = isLiked;
+                                      post.likes += isLiked ? 1 : -1;
+                                    });
+                                  }
+                                },
+                                icon: Row(
+                                  children: [
+                                    Icon(
+                                      likedPosts[post.id] ?? false
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: likedPosts[post.id] ?? false
+                                          ? Colors.red
+                                          : null,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text("${post.likes}"),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CommentsScreen(post: post),
+                                    ),
+                                  );
+                                },
+                                icon: Row(
+                                  children: [
+                                    Icon(Icons.message),
+                                    SizedBox(width: 4),
+                                    Text("${post.comments.length}"),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                  onPressed: () {}, icon: Icon(Icons.repeat)),
+                              IconButton(
+                                  onPressed: () {
+                                    String postUrl = "${linkPost}${post.id}";
+                                    sharePost(post.id);
+                                  },
+                                  icon: Icon(Icons.share)),
+                              IconButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    savedPosts[post.id] =
+                                        !isSaved; // تحديث حالة الحفظ
+                                  });
 
-                              print(
-                                  "✅ تم ${isSaved ? "إلغاء الحفظ" : "الحفظ"} بنجاح على المنشور: ${post.id}");
-                            },
-                            icon: Icon(
-                              isSaved ? Icons.bookmark : Icons.bookmark_border,
-                              color: isSaved ? Colors.blue : null,
-                            ),
+                                  // حفظ حالة الحفظ الجديدة
+                                  await saveSavedPosts(savedPosts);
+
+                                  print(
+                                      "✅ تم ${isSaved ? "إلغاء الحفظ" : "الحفظ"} بنجاح على المنشور: ${post.id}");
+                                },
+                                icon: Icon(
+                                  isSaved
+                                      ? Icons.bookmark
+                                      : Icons.bookmark_border,
+                                  color: isSaved ? Colors.blue : null,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      Divider(color: kblack),
-                    ],
+                    ),
                   );
                 },
               ),

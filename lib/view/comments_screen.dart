@@ -65,13 +65,23 @@ class _CommentsScreenState extends State<CommentsScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: widget.post.comments.length,
-              itemBuilder: (context, index) {
-                final comment = widget.post.comments[index];
-                return CommentItem(comment: comment);
-              },
-            ),
+            child: widget.post.comments.isEmpty
+                ? Center(
+                    child: Text(
+                      "لا يوجد تعليقات",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: widget.post.comments.length,
+                    itemBuilder: (context, index) {
+                      final comment = widget.post.comments[index];
+                      return CommentItem(comment: comment);
+                    },
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
