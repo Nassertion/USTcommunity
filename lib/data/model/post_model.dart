@@ -1,9 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-
-import 'package:flutter/material.dart';
 import 'package:graduation_project/data/model/comment_model.dart';
+import 'package:graduation_project/data/model/profile_model.dart';
 import 'package:graduation_project/data/model/user_model.dart';
-import 'package:http/http.dart';
 
 class Post {
   int id;
@@ -15,7 +13,7 @@ class Post {
   String updatedAt;
   bool isLiked;
   int likes;
-  User user;
+  Profile profile;
   List<Comment> comments;
 
   Post(
@@ -28,7 +26,7 @@ class Post {
       required this.updatedAt,
       required this.isLiked,
       required this.likes,
-      required this.user,
+      required this.profile,
       required this.comments});
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -44,9 +42,9 @@ class Post {
         isLiked:
             json['isLiked'] is bool ? json['isLiked'] : (json['isLiked'] == 1),
         likes: json['likes'] ?? 0,
-        user: json['user'] != null
-            ? User.fromJson(json['user'])
-            : User.defaultUser(),
+        profile: json['profile'] != null
+            ? Profile.fromJson(json['profile'])
+            : Profile.defaultProfile(),
         comments: (json['comments'] is List)
             ? (json['comments'] as List)
                 .map((comment) => Comment.fromJson(comment))
@@ -65,7 +63,7 @@ class Post {
         updatedAt: "",
         isLiked: false,
         likes: 0,
-        user: User.defaultUser(),
+        profile: Profile.defaultProfile(),
         comments: [],
       );
     }
@@ -87,7 +85,7 @@ class Post {
       body: body ?? this.body,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      user: user ?? this.user,
+      profile: profile ?? this.profile,
       isLiked: isLiked ?? this.isLiked,
       likes: likes ?? this.likes,
       comments: comments ?? this.comments,

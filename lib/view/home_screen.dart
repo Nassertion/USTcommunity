@@ -133,9 +133,9 @@ class _HomescreenState extends State<Homescreen> {
                           // رأس البوست (صورة المستخدم واسمه)
                           ListTile(
                             leading: CircleAvatar(
-                              backgroundImage: post.user.imageUrl != null &&
-                                      post.user.imageUrl!.isNotEmpty
-                                  ? NetworkImage(post.user.imageUrl!)
+                              backgroundImage: post.profile.imageUrl != null &&
+                                      post.profile.imageUrl!.isNotEmpty
+                                  ? NetworkImage(post.profile.imageUrl!)
                                   : AssetImage("assets/images/user.png")
                                       as ImageProvider,
                               backgroundColor: Colors.black,

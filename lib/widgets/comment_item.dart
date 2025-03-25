@@ -16,12 +16,12 @@ class CommentItem extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundImage:
-              comment.user.imageUrl != null && comment.user.imageUrl!.isNotEmpty
-                  ? NetworkImage(comment.user.imageUrl!)
-                  : AssetImage("assets/images/user.png") as ImageProvider,
+          backgroundImage: comment.profile.imageUrl != null &&
+                  comment.profile.imageUrl!.isNotEmpty
+              ? NetworkImage(comment.profile.imageUrl!)
+              : AssetImage("assets/images/user.png") as ImageProvider,
         ),
-        title: Text(comment.user.displayName),
+        title: Text(comment.profile.displayName),
         subtitle: Text(comment.body ?? "بدون محتوى"),
         trailing: Text(formatPostDate(comment.createdAt) ?? ""),
       ),
