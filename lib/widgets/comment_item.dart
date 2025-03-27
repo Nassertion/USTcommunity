@@ -21,7 +21,14 @@ class CommentItem extends StatelessWidget {
               ? NetworkImage(comment.profile.imageUrl!)
               : AssetImage("assets/images/user.png") as ImageProvider,
         ),
-        title: Text(comment.profile.displayName),
+        title: Text(
+          comment.profile.displayName.isNotEmpty
+              ? comment.profile.displayName
+              : 'مستخدم ${comment.userId}',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         subtitle: Text(comment.body ?? "بدون محتوى"),
         trailing: Text(formatPostDate(comment.createdAt) ?? ""),
       ),

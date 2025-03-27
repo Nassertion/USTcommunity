@@ -45,42 +45,39 @@ class _HomescreenState extends State<Homescreen> {
     if (isLoading) return;
 
     setState(() => isLoading = true);
-    print(" جاري تحميل البيانات الصفحة: $page");
 
     try {
       var response =
           await crud.getrequest("${linkPost}?page=$page&limit=$limit");
 
-      print(" استجابة API الأولية: ${response}");
-
       if (response != null && response is Map<String, dynamic>) {
-        // التعديل هنا: الوصول إلى القائمة عبر حقل 'data'
-        List<Post> newPosts = (response['data'] as List)
-            .map((data) => Post.fromJson(data))
-            .toList();
-
-        if (newPosts.isEmpty) {
-          print(" لا يوجد منشورات جديدة");
-        }
+        List<Post> newPosts = (response['data'] as List).map((postData) {
+          // معالجة المنشورات القديمة التي لا تحتوي على profile
+          if (postData['profile'] == null) {
+            postData['profile'] = {
+              'id': postData['user_id'],
+              'user_id': postData['user_id'],
+              'displayName': 'مستخدم ${postData['user_id']}',
+              'major_id': 0,
+              'level': 0,
+              'branch': 'غير محدد',
+              'bio': null,
+              'imageUrl': null
+            };
+          }
+          return Post.fromJson(postData);
+        }).toList();
 
         setState(() {
           posts.addAll(newPosts);
-          page++; // زيادة رقم الصفحة
-
-          // تحديث حالة الإعجاب بناءً على البيانات من الخادم
-          for (var post in newPosts) {
-            likedPosts[post.id] = post.isLiked ?? false;
-          }
+          page++;
         });
-      } else {
-        print(
-            " خطأ: البيانات المستلمة ليست بالشكل المتوقع. الاستجابة: $response");
       }
     } catch (e) {
-      print(" خطأ أثناء جلب المنشورات: $e");
+      print("خطأ في جلب المنشورات: $e");
+    } finally {
+      setState(() => isLoading = false);
     }
-
-    setState(() => isLoading = false);
   }
 
   void _onScroll() {
@@ -141,10 +138,18 @@ class _HomescreenState extends State<Homescreen> {
                                   ? NetworkImage(post.profile.imageUrl!)
                                   : AssetImage("assets/images/user.png")
                                       as ImageProvider,
-                              backgroundColor: Colors.black,
                             ),
-                            title: Text("المستخدم ${post.userId}"),
-                            subtitle: Text(formatPostDate(post.createdAt)),
+                            title: Text(
+                              post.profile.displayName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            subtitle: Text(
+                              formatPostDate(post.createdAt),
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           ),
                           // نص البوست
                           Padding(

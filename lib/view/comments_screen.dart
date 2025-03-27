@@ -18,6 +18,45 @@ class CommentsScreen extends StatefulWidget {
 class _CommentsScreenState extends State<CommentsScreen> {
   final TextEditingController _commentController = TextEditingController();
   bool isLoading = false;
+  bool isLoadingComments = false;
+
+  Future<void> fetchComments() async {
+    setState(() => isLoadingComments = true);
+
+    try {
+      final response = await Crud().getrequest(
+        "${linkPost}${widget.post.id}/comments",
+      );
+
+      if (response != null && response is List) {
+        List<Comment> newComments = response.map((data) {
+          // إصلاح البيانات القديمة
+          if (data['user'] == null && data['user_id'] != null) {
+            data['user'] = {
+              'profile': {
+                'displayName': 'مستخدم ${data['user_id']}',
+                'id': data['user_id'],
+                'major_id': 0,
+                'level': 0,
+                'branch': '',
+                'bio': null,
+                'imageUrl': null,
+              }
+            };
+          }
+          return Comment.fromJson(data);
+        }).toList();
+
+        setState(() {
+          widget.post.comments = newComments;
+        });
+      }
+    } catch (e) {
+      print("خطأ في جلب التعليقات: $e");
+    } finally {
+      setState(() => isLoadingComments = false);
+    }
+  }
 
   Future<void> addComment() async {
     final String commentText = _commentController.text.trim();
@@ -28,31 +67,36 @@ class _CommentsScreenState extends State<CommentsScreen> {
     try {
       final response = await Crud().postrequest(
         "${linkPost}${widget.post.id}/comments",
-        {
-          'body': commentText,
-        },
+        {'body': commentText},
       );
 
-      print(" استجابة الخادم: $response");
-
-      if (response != null) {
-        if (response['success'] == true || response['id'] != null) {
-          setState(() {
-            widget.post.comments.add(Comment.fromJson(response));
-          });
-          _commentController.clear();
-        } else {
-          print(
-              " فشل في إضافة التعليق: ${response['message'] ?? 'لا توجد رسالة'}");
+      if (response != null && response['id'] != null) {
+        // إضافة بيانات المستخدم الحالي إذا لم تكن موجودة
+        if (response['user'] == null) {
+          response['user'] = {
+            'profile': {
+              'displayName': 'أنت', // أو جلب اسم المستخدم من مكان آخر
+              'imageUrl': null,
+            }
+          };
         }
-      } else {
-        print(" فشل في الحصول على استجابة من الخادم");
+
+        setState(() {
+          widget.post.comments.insert(0, Comment.fromJson(response));
+        });
+        _commentController.clear();
       }
     } catch (e) {
-      print(" خطأ أثناء إضافة التعليق: $e");
+      print("خطأ في إضافة التعليق: $e");
+    } finally {
+      setState(() => isLoading = false);
     }
+  }
 
-    setState(() => isLoading = false);
+  @override
+  void initState() {
+    super.initState();
+    fetchComments();
   }
 
   @override
@@ -65,23 +109,25 @@ class _CommentsScreenState extends State<CommentsScreen> {
       body: Column(
         children: [
           Expanded(
-            child: widget.post.comments.isEmpty
-                ? Center(
-                    child: Text(
-                      "لا يوجد تعليقات",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey,
+            child: isLoadingComments
+                ? Center(child: CircularProgressIndicator())
+                : widget.post.comments.isEmpty
+                    ? Center(
+                        child: Text(
+                          "لا يوجد تعليقات",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: widget.post.comments.length,
+                        itemBuilder: (context, index) {
+                          final comment = widget.post.comments[index];
+                          return CommentItem(comment: comment);
+                        },
                       ),
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: widget.post.comments.length,
-                    itemBuilder: (context, index) {
-                      final comment = widget.post.comments[index];
-                      return CommentItem(comment: comment);
-                    },
-                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -98,7 +144,9 @@ class _CommentsScreenState extends State<CommentsScreen> {
                 ),
                 IconButton(
                   onPressed: isLoading ? null : addComment,
-                  icon: Icon(Icons.send),
+                  icon: isLoading
+                      ? CircularProgressIndicator()
+                      : Icon(Icons.send),
                   color: kPrimaryolor,
                 ),
               ],

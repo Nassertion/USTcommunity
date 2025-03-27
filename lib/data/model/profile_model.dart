@@ -25,12 +25,13 @@ class Profile {
     return Profile(
       id: json['id'] ?? 0,
       userId: json['user_id'] ?? 0,
-      displayName: json['displayName'] ?? "مستخدم مجهول",
+      displayName: json['displayName']?.toString() ??
+          'مستخدم ${json['user_id'] ?? json['id'] ?? 'مجهول'}',
       majorId: json['major_id'] ?? 0,
       level: json['level'] ?? 0,
-      branch: json['branch'] ?? "غير محدد",
-      bio: json['bio']?.toString() ?? "",
-      imageUrl: json['imageUrl']?.toString() ?? "",
+      branch: json['branch']?.toString() ?? 'غير محدد',
+      bio: json['bio']?.toString(),
+      imageUrl: json['imageUrl']?.toString(),
       major: json['major']?.toString(),
     );
   }
@@ -39,13 +40,13 @@ class Profile {
     return Profile(
       id: 0,
       userId: 0,
-      displayName: "مستخدم افتراضي",
+      displayName: 'مستخدم مجهول',
       majorId: 0,
       level: 0,
-      branch: "غير محدد",
-      bio: "",
-      imageUrl: "",
-      major: "",
+      branch: 'غير محدد',
+      bio: null,
+      imageUrl: null,
+      major: null,
     );
   }
 }

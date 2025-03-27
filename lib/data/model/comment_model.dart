@@ -23,6 +23,16 @@ class Comment {
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
+    // محاولة استخراج الاسم من عدة أماكن محتملة
+    String displayName = 'مستخدم مجهول';
+    dynamic profileData = json['user']?['profile'] ?? json['profile'];
+
+    if (profileData != null) {
+      displayName = profileData['displayName']?.toString() ??
+          profileData['username']?.toString() ??
+          'مستخدم ${json['user_id']}';
+    }
+
     return Comment(
       id: json['id'] ?? 0,
       userId: json['user_id'] ?? 0,
@@ -31,7 +41,16 @@ class Comment {
       attachmentUrl: json['attachment_url'],
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
-      profile: Profile.fromJson(json['profile'] ?? {}),
+      profile: Profile(
+        id: profileData?['id'] ?? json['user_id'] ?? 0,
+        userId: json['user_id'] ?? 0,
+        displayName: displayName,
+        majorId: profileData?['major_id'] ?? 0,
+        level: profileData?['level'] ?? 0,
+        branch: profileData?['branch']?.toString() ?? '',
+        bio: profileData?['bio']?.toString(),
+        imageUrl: profileData?['imageUrl']?.toString(),
+      ),
     );
   }
 }

@@ -42,17 +42,30 @@ class Post {
         isLiked:
             json['isLiked'] is bool ? json['isLiked'] : (json['isLiked'] == 1),
         likes: json['likes'] ?? 0,
-        profile: json['profile'] != null
-            ? Profile.fromJson(json['profile'])
-            : Profile.defaultProfile(),
+        profile: Profile.fromJson(json['profile'] ?? {}),
         comments: (json['comments'] is List)
-            ? (json['comments'] as List)
-                .map((comment) => Comment.fromJson(comment))
-                .toList()
+            ? (json['comments'] as List).map((comment) {
+                // معالجة التعليقات القديمة
+                if (comment['user'] == null && comment['user_id'] != null) {
+                  comment['user'] = {
+                    'profile': {
+                      'displayName': 'مستخدم ${comment['user_id']}',
+                      'id': comment['user_id'],
+                      'user_id': comment['user_id'],
+                      'major_id': 0,
+                      'level': 0,
+                      'branch': 'غير محدد',
+                      'bio': null,
+                      'imageUrl': null
+                    }
+                  };
+                }
+                return Comment.fromJson(comment);
+              }).toList()
             : [],
       );
     } catch (e) {
-      print(" خطأ في `Post.fromJson()`: $e");
+      print("خطأ في تحويل بيانات المنشور: $e");
       return Post(
         id: 0,
         userId: 0,
