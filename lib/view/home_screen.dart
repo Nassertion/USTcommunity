@@ -53,9 +53,11 @@ class _HomescreenState extends State<Homescreen> {
 
       print(" استجابة API الأولية: ${response}");
 
-      if (response != null && response is List) {
-        List<Post> newPosts =
-            response.map((data) => Post.fromJson(data)).toList();
+      if (response != null && response is Map<String, dynamic>) {
+        // التعديل هنا: الوصول إلى القائمة عبر حقل 'data'
+        List<Post> newPosts = (response['data'] as List)
+            .map((data) => Post.fromJson(data))
+            .toList();
 
         if (newPosts.isEmpty) {
           print(" لا يوجد منشورات جديدة");
@@ -71,7 +73,8 @@ class _HomescreenState extends State<Homescreen> {
           }
         });
       } else {
-        print(" خطأ: البيانات المستلمة ليست قائمة. الاستجابة: $response");
+        print(
+            " خطأ: البيانات المستلمة ليست بالشكل المتوقع. الاستجابة: $response");
       }
     } catch (e) {
       print(" خطأ أثناء جلب المنشورات: $e");
