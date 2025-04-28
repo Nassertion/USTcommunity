@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/model/post_model.dart';
 import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/view/comments_screen.dart';
 import 'package:graduation_project/widgets/readmore.dart';
-import 'package:graduation_project/widgets/save_widget.dart';
 import 'package:graduation_project/widgets/share_widget.dart';
 import 'package:graduation_project/widgets/time_widget.dart';
+import 'dart:convert';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -24,8 +25,8 @@ class _HomescreenState extends State<Homescreen> {
   final int limit = 10;
   final ScrollController _scrollController = ScrollController();
 
-  Map<int, bool> likedPosts = {};
-  Map<int, bool> savedPosts = {};
+  Map<int, bool> likedPosts = {}; // لحفظ حالة الإعجاب في الذاكرة
+  Map<int, bool> savedPosts = {}; // لحفظ حالة الحفظ في الذاكرة
 
   @override
   void initState() {
@@ -33,12 +34,53 @@ class _HomescreenState extends State<Homescreen> {
     fetchPosts();
     _scrollController.addListener(_onScroll);
 
-    // جلب حالة الحفظ المحفوظة
-    getSavedPosts().then((savedSavedPosts) {
+    // جلب حالة الإعجاب وحالة الحفظ من SharedPreferences
+    _loadLikedPosts();
+    _loadSavedPosts();
+  }
+
+  // دالة لتحميل حالة الإعجاب من SharedPreferences
+  Future<void> _loadLikedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedPostsData = prefs.getString('likedPosts');
+    if (likedPostsData != null) {
+      final Map<String, dynamic> decoded = jsonDecode(likedPostsData);
       setState(() {
-        savedPosts = savedSavedPosts;
+        likedPosts = decoded
+            .map((key, value) => MapEntry(int.parse(key), value as bool));
       });
-    });
+    }
+  }
+
+  // دالة لحفظ حالة الإعجاب في SharedPreferences
+  Future<void> _saveLikedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedPostsData =
+        likedPosts.map((key, value) => MapEntry(key.toString(), value));
+    await prefs.setString('likedPosts', jsonEncode(likedPostsData));
+    print("حالة الإعجاب تم حفظها بنجاح.");
+  }
+
+  // دالة لحفظ حالة الحفظ في SharedPreferences
+  Future<void> _saveSavedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsData =
+        savedPosts.map((key, value) => MapEntry(key.toString(), value));
+    await prefs.setString('savedPosts', jsonEncode(savedPostsData));
+    print("حالة الحفظ تم حفظها بنجاح.");
+  }
+
+  // دالة لتحميل حالة الحفظ من SharedPreferences
+  Future<void> _loadSavedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsData = prefs.getString('savedPosts');
+    if (savedPostsData != null) {
+      final Map<String, dynamic> decoded = jsonDecode(savedPostsData);
+      setState(() {
+        savedPosts = decoded
+            .map((key, value) => MapEntry(int.parse(key), value as bool));
+      });
+    }
   }
 
   Future<void> fetchPosts() async {
@@ -52,7 +94,6 @@ class _HomescreenState extends State<Homescreen> {
 
       if (response != null && response is Map<String, dynamic>) {
         List<Post> newPosts = (response['data'] as List).map((postData) {
-          // معالجة المنشورات القديمة التي لا تحتوي على profile
           if (postData['profile'] == null) {
             postData['profile'] = {
               'id': postData['user_id'],
@@ -120,17 +161,16 @@ class _HomescreenState extends State<Homescreen> {
 
                   return Card(
                     color: kBackgroundColor,
-                    margin: EdgeInsets.all(8), // هوامش حول الكارت
-                    elevation: 4, // ظل للكارت
+                    margin: EdgeInsets.all(8),
+                    elevation: 4,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // زوايا مدورة
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(12), // هوامش داخل الكارت
+                      padding: EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // رأس البوست (صورة المستخدم واسمه)
                           ListTile(
                             leading: CircleAvatar(
                               backgroundImage: post.profile.imageUrl != null &&
@@ -148,40 +188,39 @@ class _HomescreenState extends State<Homescreen> {
                             ),
                             subtitle: Text(
                               formatPostDate(post.createdAt),
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(
+                                  color:
+                                      const Color.fromARGB(255, 121, 121, 121)),
                             ),
                           ),
-                          // نص البوست
                           Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
                             child: ExpandableContent(
                                 text: post.body ?? "بدون محتوى"),
                           ),
-                          SizedBox(height: 10), // مسافة بين النص والأزرار
-                          // أزرار التفاعل (إعجاب، تعليق، مشاركة، حفظ)
+                          SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               IconButton(
                                 onPressed: () async {
                                   setState(() {
-                                    likedPosts[post.id] =
-                                        !isLiked; // تحديث الحالة المحلية
-                                    post.likes +=
-                                        isLiked ? -1 : 1; // تحديث عدد الإعجابات
+                                    likedPosts[post.id] = !isLiked;
+                                    post.likes += isLiked ? -1 : 1;
                                   });
 
-                                  // إرسال الطلب إلى الخادم
-                                  final success = await crud.toggleLike(post.id,
-                                      isLiked); // استدعاء الدالة من Crud
+                                  final success =
+                                      await crud.toggleLike(post.id, isLiked);
                                   if (!success) {
-                                    // إذا فشل الطلب، قم بإعادة الحالة إلى ما كانت عليه
                                     setState(() {
                                       likedPosts[post.id] = isLiked;
                                       post.likes += isLiked ? 1 : -1;
                                     });
                                   }
+
+                                  // حفظ حالة الإعجاب بعد التبديل
+                                  await _saveLikedPosts();
                                 },
                                 icon: Row(
                                   children: [
@@ -227,12 +266,11 @@ class _HomescreenState extends State<Homescreen> {
                               IconButton(
                                 onPressed: () async {
                                   setState(() {
-                                    savedPosts[post.id] =
-                                        !isSaved; // تحديث حالة الحفظ
+                                    savedPosts[post.id] = !isSaved;
                                   });
 
-                                  // حفظ حالة الحفظ الجديدة
-                                  await saveSavedPosts(savedPosts);
+                                  // حفظ حالة الحفظ بعد التبديل
+                                  await _saveSavedPosts();
 
                                   print(
                                       "✅ تم ${isSaved ? "إلغاء الحفظ" : "الحفظ"} بنجاح على المنشور: ${post.id}");

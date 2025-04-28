@@ -26,9 +26,8 @@ class _ProfilescreenState extends State<Profilescreen>
 
     if (response != null) {
       print("Logout successful");
-      await crud.deleteToken(); // حذف التوكن محليًا
-      Navigator.of(context)
-          .pushReplacementNamed('/login'); // إعادة التوجيه لصفحة تسجيل الدخول
+      await crud.deleteToken();
+      Navigator.of(context).pushReplacementNamed('/login');
     } else {
       print("Logout failed");
     }
@@ -112,20 +111,13 @@ class _ProfilescreenState extends State<Profilescreen>
               ],
             ),
           ),
-          // إضافة TabBarView لعرض المحتوى المتوافق مع التبويبات
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                Center(
-                    child:
-                        Text("محتوى المنشورات")), // محتوى علامة التبويب الأولى
-                Center(
-                    child: Text(
-                        "محتوى المعاد نشره")), // محتوى علامة التبويب الثانية
-                Center(
-                    child:
-                        Text("محتوى المحفوظة")), // محتوى علامة التبويب الثالثة
+                Center(child: Text("محتوى المنشورات")),
+                Center(child: Text("محتوى المعاد نشره")),
+                Center(child: Text("محتوى المحفوظة")),
               ],
             ),
           ),

@@ -30,7 +30,6 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
       if (response != null && response is List) {
         List<Comment> newComments = response.map((data) {
-          // إصلاح البيانات القديمة
           if (data['user'] == null && data['user_id'] != null) {
             data['user'] = {
               'profile': {
@@ -71,11 +70,10 @@ class _CommentsScreenState extends State<CommentsScreen> {
       );
 
       if (response != null && response['id'] != null) {
-        // إضافة بيانات المستخدم الحالي إذا لم تكن موجودة
         if (response['user'] == null) {
           response['user'] = {
             'profile': {
-              'displayName': 'أنت', // أو جلب اسم المستخدم من مكان آخر
+              'displayName': 'أنت',
               'imageUrl': null,
             }
           };

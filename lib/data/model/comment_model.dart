@@ -23,7 +23,6 @@ class Comment {
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
-    // محاولة استخراج الاسم من عدة أماكن محتملة
     String displayName = 'مستخدم مجهول';
     dynamic profileData = json['user']?['profile'] ?? json['profile'];
 

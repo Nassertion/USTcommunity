@@ -5,7 +5,6 @@ import 'package:graduation_project/view/post_creation_screen.dart';
 import 'package:graduation_project/view/profile_screen.dart';
 import 'package:graduation_project/view/search_screen.dart';
 import 'package:graduation_project/view/home_screen.dart';
-//bottom_nav_widget.dart
 
 class HomeScreenWithNav extends StatefulWidget {
   const HomeScreenWithNav({super.key});
@@ -25,10 +24,9 @@ class _HomeScreenWithNavState extends State<HomeScreenWithNav> {
     Profilescreen(),
   ];
 
-  // دالة للتبديل بين الصفحات
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index; // تحديث الصفحة عند التبديل
+      _selectedIndex = index;
     });
   }
 
@@ -36,18 +34,16 @@ class _HomeScreenWithNavState extends State<HomeScreenWithNav> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        index: _selectedIndex, // تعيين الصفحة التي يجب أن تكون مرئية
-        children: _pages, // صفحات التطبيق
+        index: _selectedIndex,
+        children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type:
-            BottomNavigationBarType.fixed, // لعرض جميع العناصر في الشريط السفلي
+        type: BottomNavigationBarType.fixed,
         backgroundColor: kPrimaryolor,
-        selectedItemColor:
-            const Color.fromARGB(255, 254, 223, 112), // لون العنصر المحدد
-        unselectedItemColor: kBackgroundColor, // لون العناصر غير المحددة
-        currentIndex: _selectedIndex, // الصفحة الحالية
-        onTap: _onItemTapped, // دالة التبديل بين الصفحات
+        selectedItemColor: const Color.fromARGB(255, 254, 223, 112),
+        unselectedItemColor: kBackgroundColor,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(label: "الرئيسية", icon: Icon(Icons.home)),
           BottomNavigationBarItem(label: "بحث", icon: Icon(Icons.search)),

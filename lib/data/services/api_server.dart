@@ -1,4 +1,3 @@
-//api_service.dart
 import 'dart:convert';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +8,7 @@ Crud crud = Crud();
 class Crud {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
+  // دالة لحفظ التوكن
   Future<String?> getToken() async {
     try {
       return await _secureStorage.read(key: 'token');
@@ -18,6 +18,7 @@ class Crud {
     }
   }
 
+  // دالة لحفظ التوكن
   Future<void> saveToken(String token) async {
     try {
       await _secureStorage.write(key: 'token', value: token);
@@ -27,6 +28,7 @@ class Crud {
     }
   }
 
+  // دالة لحذف التوكن
   Future<void> deleteToken() async {
     try {
       await _secureStorage.delete(key: 'token');
@@ -36,6 +38,7 @@ class Crud {
     }
   }
 
+  // دالة لتبديل حالة الإعجاب
   Future<bool> toggleLike(int postId, bool isLiked) async {
     try {
       final token = await getToken();
@@ -47,30 +50,31 @@ class Crud {
 
       final String endpoint =
           isLiked ? "${linkUnlike}$postId" : "${linkLike}$postId";
-      print('🔴 الإرسال إلى: $endpoint');
+      print(' الإرسال إلى: $endpoint');
 
       final response = isLiked
           ? await http.delete(Uri.parse(endpoint), headers: headers)
           : await http.put(Uri.parse(endpoint), headers: headers);
 
-      print('🟢 استجابة الخادم: ${response.statusCode} - ${response.body}');
+      print(' استجابة الخادم: ${response.statusCode} - ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ تم ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} بنجاح');
+        print(' تم ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} بنجاح');
         return true;
       } else if (response.statusCode == 500) {
-        print('⚠️ تحذير: الإعجاب ناجح لكن هناك مشكلة في الإشعارات');
-        return true; // تجاهل خطأ الإشعارات إذا كان الإعجاب ناجحًا
+        print(' تحذير: الإعجاب ناجح لكن هناك مشكلة في الإشعارات');
+        return true;
       } else {
-        print('❌ فشل الإعجاب: ${response.statusCode}');
+        print(' فشل الإعجاب: ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('❌ خطأ في الاتصال: $e');
+      print('خطأ في الاتصال: $e');
       return false;
     }
   }
 
+  // دالة لجلب البيانات من الخادم
   Future<dynamic> getrequest(String uri) async {
     try {
       final token = await getToken();
@@ -97,6 +101,7 @@ class Crud {
     }
   }
 
+  // دالة للإرسال عبر POST
   Future<dynamic> postrequest(String uri, Map<String, dynamic> data) async {
     try {
       final token = await getToken();

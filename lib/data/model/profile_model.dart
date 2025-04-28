@@ -7,7 +7,7 @@ class Profile {
   String branch;
   String? bio;
   String? imageUrl;
-  String? major; // تمت إضافته بناءً على البيانات
+  String? major;
 
   Profile({
     required this.id,
