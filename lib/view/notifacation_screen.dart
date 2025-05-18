@@ -31,37 +31,11 @@ class _NotifacationscreenState extends State<Notifacationscreen> {
             ListTile(
               leading: CircleAvatar(
                   backgroundImage: AssetImage("assets/images/test.png")),
-              title: Text("Username 1"),
+              title: Text("Username 2"),
               subtitle: Text(" وضع اعجاب للمنشور هذا"),
             ),
             SizedBox(
               height: 20,
-            ),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundImage: AssetImage("assets/images/test.png"),
-              ),
-              title: Text("Username 1"),
-              subtitle: Text(" وضع اعجاب للمنشور هذا"),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            ListTile(
-              leading: CircleAvatar(
-                  backgroundImage: AssetImage("assets/images/test.png")),
-              title: Text("Username 1"),
-              subtitle: Text(" وضع اعجاب للمنشور هذا"),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            ListTile(
-              leading: CircleAvatar(
-                backgroundImage: AssetImage("assets/images/test.png"),
-              ),
-              title: Text("Username 1"),
-              subtitle: Text(" وضع اعجاب للمنشور هذا"),
             ),
           ],
         ),

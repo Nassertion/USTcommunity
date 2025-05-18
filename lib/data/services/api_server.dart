@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Crud crud = Crud();
 
@@ -10,32 +11,20 @@ class Crud {
 
   // دالة لحفظ التوكن
   Future<String?> getToken() async {
-    try {
-      return await _secureStorage.read(key: 'token');
-    } catch (e) {
-      print("Error reading token: $e");
-      return null;
-    }
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token'); // استرجاع التوكن من SharedPreferences
   }
 
   // دالة لحفظ التوكن
   Future<void> saveToken(String token) async {
-    try {
-      await _secureStorage.write(key: 'token', value: token);
-      print("Token saved successfully");
-    } catch (e) {
-      print("Error saving token: $e");
-    }
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('token', token); // حفظ التوكن في SharedPreferences
   }
 
   // دالة لحذف التوكن
   Future<void> deleteToken() async {
-    try {
-      await _secureStorage.delete(key: 'token');
-      print("Token deleted successfully");
-    } catch (e) {
-      print("Error deleting token: $e");
-    }
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('token'); // حذف التوكن
   }
 
   // دالة لتبديل حالة الإعجاب
@@ -50,22 +39,16 @@ class Crud {
 
       final String endpoint =
           isLiked ? "${linkUnlike}$postId" : "${linkLike}$postId";
-      print(' الإرسال إلى: $endpoint');
-
       final response = isLiked
           ? await http.delete(Uri.parse(endpoint), headers: headers)
           : await http.put(Uri.parse(endpoint), headers: headers);
 
-      print(' استجابة الخادم: ${response.statusCode} - ${response.body}');
-
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print(' تم ${isLiked ? "إلغاء الإعجاب" : "الإعجاب"} بنجاح');
+        print(response.body);
         return true;
-      } else if (response.statusCode == 500) {
-        print(' تحذير: الإعجاب ناجح لكن هناك مشكلة في الإشعارات');
-        return true;
+        
       } else {
-        print(' فشل الإعجاب: ${response.statusCode}');
+        print('فشل في العملية: ${response.statusCode}');
         return false;
       }
     } catch (e) {
@@ -84,20 +67,16 @@ class Crud {
         'Accept': 'application/json',
       };
 
-      print(" طلب API: $uri");
-      print(" التوكن المرسل: $token");
-
       final response = await http.get(Uri.parse(uri), headers: headers);
-      print(" استجابة HTTP: ${response.body}");
-
       if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        return responseBody;
+        return jsonDecode(response.body);
       } else {
-        print(' خطأ ${response.statusCode}: ${response.body}');
+        print('خطأ ${response.statusCode}: ${response.body}');
+        return null;
       }
     } catch (e) {
-      print(" خطأ catch ${e}");
+      print("خطأ أثناء الاتصال: $e");
+      return null;
     }
   }
 
@@ -111,27 +90,17 @@ class Crud {
         'Content-Type': 'application/json',
       };
 
-      print(" طلب API: $uri");
-      print(" التوكن المرسل: $token");
-      print(" البيانات المرسلة: $data");
-
-      final response = await http.post(
-        Uri.parse(uri),
-        headers: headers,
-        body: jsonEncode(data),
-      );
-
-      print(" استجابة HTTP: ${response.body}");
+      final response = await http.post(Uri.parse(uri),
+          headers: headers, body: jsonEncode(data));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseBody = jsonDecode(response.body);
-        return responseBody;
+        return jsonDecode(response.body);
       } else {
-        print(' خطأ ${response.statusCode}: ${response.body}');
+        print('خطأ ${response.statusCode}: ${response.body}');
         return null;
       }
     } catch (e) {
-      print(" خطأ catch ${e}");
+      print("خطأ أثناء الاتصال: $e");
       return null;
     }
   }

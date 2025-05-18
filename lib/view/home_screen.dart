@@ -155,7 +155,6 @@ class _HomescreenState extends State<Homescreen> {
                   }
 
                   Post post = posts[index];
-
                   bool isLiked = likedPosts[post.id] ?? false;
                   bool isSaved = savedPosts[post.id] ?? false;
 
@@ -189,15 +188,29 @@ class _HomescreenState extends State<Homescreen> {
                             subtitle: Text(
                               formatPostDate(post.createdAt),
                               style: TextStyle(
+                                  fontSize: 12,
                                   color:
                                       const Color.fromARGB(255, 121, 121, 121)),
                             ),
                           ),
                           Padding(
                             padding:
+                                const EdgeInsets.symmetric(horizontal: 5.0),
+                            child: post.title != null
+                                ? Text(
+                                    post.title ?? "",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w900),
+                                  )
+                                : Text(post.title ?? "بدون محتوى"),
+                          ),
+                          Padding(
+                            padding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: ExpandableContent(
-                                text: post.body ?? "بدون محتوى"),
+                            child: post.body != null &&
+                                    post.body!.length > 100 // أو حسب تقديرك
+                                ? ExpandableContent(text: post.body!)
+                                : Text(post.body ?? "بدون محتوى"),
                           ),
                           SizedBox(height: 10),
                           Row(
@@ -255,8 +268,8 @@ class _HomescreenState extends State<Homescreen> {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                  onPressed: () {}, icon: Icon(Icons.repeat)),
+                              // IconButton(
+                              //     onPressed: () {}, icon: Icon(Icons.repeat)),
                               IconButton(
                                   onPressed: () {
                                     String postUrl = "${linkPost}${post.id}";

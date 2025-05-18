@@ -21,6 +21,8 @@ class _ExpandableContentState extends State<ExpandableContent> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isLongText = widget.text.length > 100; // حد تقريبي للنص الطويل
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -33,27 +35,26 @@ class _ExpandableContentState extends State<ExpandableContent> {
             maxLines: widget.maxLines,
             overflow: TextOverflow.ellipsis,
           ),
-          secondChild: Text(
-            widget.text,
-          ),
+          secondChild: Text(widget.text),
         ),
         if (widget.imageUrl != null)
           Image.asset(
             widget.imageUrl!,
             fit: BoxFit.cover,
           ),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              isExpanded = !isExpanded;
-            });
-          },
-          child: Text(
-            isExpanded ? "إخفاء" : "اقرأ المزيد",
-            style: const TextStyle(
-                color: Colors.blue, fontWeight: FontWeight.bold),
+        if (isLongText)
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                isExpanded = !isExpanded;
+              });
+            },
+            child: Text(
+              isExpanded ? "إخفاء" : "اقرأ المزيد",
+              style: const TextStyle(
+                  color: Colors.blue, fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
       ],
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/model/comment_model.dart';
-import 'package:graduation_project/widgets/time_widget.dart';
+import 'package:graduation_project/widgets/time_widget.dart'; // التأكد من استخدام الوقت بشكل صحيح
 
 class CommentItem extends StatelessWidget {
   final Comment comment;

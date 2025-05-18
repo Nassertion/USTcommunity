@@ -8,6 +8,6 @@ String formatPostDate(String dateString) {
     return "${postDate.year}";
   }
   String formattedDate =
-      "${postDate.day} ${DateFormat('MMMM', 'ar').format(postDate)}";
+      "${postDate.day} ${DateFormat('MMMM', 'ar').format(postDate)}"; // التأكد من عرض الشهر بالعربي
   return formattedDate;
 }
