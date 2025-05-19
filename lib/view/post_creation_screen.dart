@@ -74,7 +74,7 @@ class _PostcreationscreenState extends State<Postcreationscreen> {
 
     if (selectedFile != null) {
       request.files.add(await http.MultipartFile.fromPath(
-        'attachment',
+        'attachment_url',
         selectedFile!.path,
       ));
     }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/constantColors.dart';
-import 'package:graduation_project/view/notifacation_screen.dart';
+import 'package:graduation_project/view/activity_screen.dart';
 import 'package:graduation_project/view/post_creation_screen.dart';
 import 'package:graduation_project/view/profile_screen.dart';
 import 'package:graduation_project/view/search_screen.dart';
@@ -20,7 +20,7 @@ class _HomeScreenWithNavState extends State<HomeScreenWithNav> {
     Homescreen(),
     Searchscreen(),
     Postcreationscreen(),
-    Notifacationscreen(),
+    NotificationsScreen(),
     Profilescreen(),
   ];
 

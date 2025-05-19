@@ -158,6 +158,7 @@ class _HomescreenState extends State<Homescreen> {
                   bool isLiked = likedPosts[post.id] ?? false;
                   bool isSaved = savedPosts[post.id] ?? false;
 
+                  // الجزء المهم من build method
                   return Card(
                     color: kBackgroundColor,
                     margin: EdgeInsets.all(8),
@@ -194,45 +195,74 @@ class _HomescreenState extends State<Homescreen> {
                             ),
                           ),
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 5.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 10),
                             child: post.title != null
                                 ? Text(
                                     post.title ?? "",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w900),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 17),
                                   )
-                                : Text(post.title ?? "بدون محتوى"),
+                                : Text(post.title ?? "بدون محتوى",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: post.body != null &&
-                                    post.body!.length > 100 // أو حسب تقديرك
+                                const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: post.body != null && post.body!.length > 100
                                 ? ExpandableContent(text: post.body!)
                                 : Text(post.body ?? "بدون محتوى"),
                           ),
-                          SizedBox(height: 10),
+                          if (post.attachmentUrl != null &&
+                              post.attachmentUrl!.isNotEmpty)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Image.network(
+                                "${linkServerName}storage/${post.attachmentUrl}",
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Text("لا يمكن تحميل الصورة");
+                                },
+                              ),
+                            ),
+                          if (post.attachmentUrl != null &&
+                              post.attachmentUrl!.isNotEmpty)
+                            // Padding(
+                            //   padding:
+                            //       const EdgeInsets.symmetric(vertical: 8.0),
+                            //   child: Image.network(
+                            //     "${linkServerName}storage/${post.attachmentUrl}",
+                            //     fit: BoxFit.cover,
+                            //     errorBuilder: (context, error, stackTrace) {
+                            //       return Text('لا يمكن تحميل الصورة');
+                            //     },
+                            //   ),
+                            // ),
+                            SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               IconButton(
                                 onPressed: () async {
                                   setState(() {
-                                    likedPosts[post.id] = !isLiked;
-                                    post.likes += isLiked ? -1 : 1;
+                                    likedPosts[post.id] =
+                                        !(likedPosts[post.id] ?? false);
+                                    post.likes += likedPosts[post.id]! ? 1 : -1;
                                   });
 
-                                  final success =
-                                      await crud.toggleLike(post.id, isLiked);
+                                  final success = await crud.toggleLike(
+                                      post.id, !(likedPosts[post.id] ?? false));
                                   if (!success) {
                                     setState(() {
-                                      likedPosts[post.id] = isLiked;
-                                      post.likes += isLiked ? 1 : -1;
+                                      likedPosts[post.id] =
+                                          !(likedPosts[post.id] ?? true);
+                                      post.likes +=
+                                          likedPosts[post.id]! ? 1 : -1;
                                     });
                                   }
 
-                                  // حفظ حالة الإعجاب بعد التبديل
                                   await _saveLikedPosts();
                                 },
                                 icon: Row(
@@ -256,7 +286,7 @@ class _HomescreenState extends State<Homescreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          CommentsScreen(post: post),
+                                          CommentsScreen(postId: post.id),
                                     ),
                                   );
                                 },
@@ -268,31 +298,29 @@ class _HomescreenState extends State<Homescreen> {
                                   ],
                                 ),
                               ),
-                              // IconButton(
-                              //     onPressed: () {}, icon: Icon(Icons.repeat)),
                               IconButton(
-                                  onPressed: () {
-                                    String postUrl = "${linkPost}${post.id}";
-                                    sharePost(post.id);
-                                  },
-                                  icon: Icon(Icons.share)),
+                                onPressed: () {
+                                  sharePost(post.id);
+                                },
+                                icon: Icon(Icons.share),
+                              ),
                               IconButton(
                                 onPressed: () async {
                                   setState(() {
-                                    savedPosts[post.id] = !isSaved;
+                                    savedPosts[post.id] =
+                                        !(savedPosts[post.id] ?? false);
                                   });
-
-                                  // حفظ حالة الحفظ بعد التبديل
                                   await _saveSavedPosts();
-
                                   print(
-                                      "✅ تم ${isSaved ? "إلغاء الحفظ" : "الحفظ"} بنجاح على المنشور: ${post.id}");
+                                      "✅ تم ${savedPosts[post.id]! ? "الحفظ" : "إلغاء الحفظ"} على المنشور: ${post.id}");
                                 },
                                 icon: Icon(
-                                  isSaved
+                                  savedPosts[post.id] ?? false
                                       ? Icons.bookmark
                                       : Icons.bookmark_border,
-                                  color: isSaved ? Colors.blue : null,
+                                  color: savedPosts[post.id] ?? false
+                                      ? Colors.blue
+                                      : null,
                                 ),
                               ),
                             ],

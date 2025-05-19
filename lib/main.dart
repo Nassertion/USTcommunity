@@ -3,7 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/view/home_screen.dart';
 import 'package:graduation_project/view/login_screen.dart';
-import 'package:graduation_project/view/notifacation_screen.dart';
+import 'package:graduation_project/view/activity_screen.dart';
 import 'package:graduation_project/view/post_creation_screen.dart';
 import 'package:graduation_project/view/search_screen.dart';
 import 'package:graduation_project/view/splash_screen.dart';
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
           "/splash": (context) => SplashScreen(),
           "/login": (context) => LogingScreen(),
           "/home": (context) => Homescreen(),
-          "notification": (context) => Notifacationscreen(),
+          "notification": (context) => NotificationsScreen(),
           "/postcreate": (context) => Postcreationscreen(),
           "/profile": (context) => Profilescreen(),
           "/search": (context) => Searchscreen(),

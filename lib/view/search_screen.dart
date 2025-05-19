@@ -45,25 +45,27 @@ class _SearchscreenState extends State<Searchscreen> {
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      if (searchController.text.isNotEmpty) {
+        final data = json.decode(response.body);
 
-      List<Post> posts = (data['posts'] is List)
-          ? data['posts'].map<Post>((item) => Post.fromJson(item)).toList()
-          : [];
+        List<Post> posts = (data['posts'] is List)
+            ? data['posts'].map<Post>((item) => Post.fromJson(item)).toList()
+            : [];
 
-      List<dynamic> users = data['users'] ?? [];
+        List<dynamic> users = data['users'] ?? [];
+
+        setState(() {
+          searchResults = posts;
+          userResults = users;
+        });
+      } else {
+        print("فشل البحث: ${response.statusCode} | ${response.body}");
+      }
 
       setState(() {
-        searchResults = posts;
-        userResults = users;
+        isLoading = false;
       });
-    } else {
-      print("فشل البحث: ${response.statusCode} | ${response.body}");
     }
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
