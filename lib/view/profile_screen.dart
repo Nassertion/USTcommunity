@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/services/api_server.dart';
+import 'package:graduation_project/view/edit_profile.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/data/model/profile_model.dart';
 import 'package:graduation_project/data/model/post_model.dart';
@@ -35,21 +36,24 @@ class _ProfilescreenState extends State<Profilescreen>
   // دالة لجلب بيانات الـ Profile
   Future<void> fetchProfileData() async {
     final prefs = await SharedPreferences.getInstance();
-    String? userId =
-        prefs.getString('user_id'); // استرجاع user_id من SharedPreferences
+    String? userId = prefs.getString('user_id');
 
-    final token = await crud.getToken(); // الحصول على التوكن من التخزين
+    final token = await crud.getToken();
     if (token != null && userId != null) {
       final response =
           await crud.getrequest("${linkServerName}api/v1/user/profile/$userId");
 
-      if (response != null) {
+      print("Response profile: $response");
+
+      if (response != null && response['profile'] != null) {
         setState(() {
-          profile = Profile.fromJson(response); // تعيين بيانات الـ Profile
+          profile = Profile.fromJson(response['profile']);
         });
-        fetchUserPosts(); // جلب المنشورات الخاصة بالمستخدم
-        fetchFollowers(); // جلب المتابعين
-        fetchFollowings(); // جلب المتابعين لديك
+        fetchUserPosts();
+        fetchFollowers();
+        fetchFollowings();
+      } else {
+        print("Profile data not found in response");
       }
     }
   }
@@ -143,13 +147,21 @@ class _ProfilescreenState extends State<Profilescreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(profile?.displayName ?? 'الاسم غير متوفر',
                             style: TextStyle(
-                                fontSize: 20)), // الاسم الظاهر من الـ Profile
-                        Text("اسم المستخدم: ${profile?.userId ?? 'غير معروف'}",
-                            style: TextStyle(
-                                fontSize: 12)), // اسم المستخدم من الـ Profile
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 10),
+                        Text("المستوى: ${profile?.level ?? 'غير محدد'}",
+                            style: TextStyle(fontSize: 16)),
+                        Text("التخصص: ${profile?.major ?? 'غير محدد'}",
+                            style: TextStyle(fontSize: 16)),
+                        Text("الفرع: ${profile?.branch ?? 'غير محدد'}",
+                            style: TextStyle(fontSize: 16)),
+                        SizedBox(height: 10),
+                        Text(profile?.bio ?? 'لا يوجد بايو',
+                            style: TextStyle(fontSize: 16, color: Colors.grey)),
                       ],
                     ),
                     SizedBox(
@@ -167,7 +179,23 @@ class _ProfilescreenState extends State<Profilescreen>
                 ),
                 SizedBox(height: 40),
                 OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditProfileScreen(
+                          currentDisplayName: profile?.displayName,
+                          currentBio: profile?.bio,
+                          currentImageUrl: profile?.imageUrl,
+                        ),
+                      ),
+                    );
+
+                    if (result == true) {
+                      // تم تعديل الملف، حدث البيانات من جديد
+                      fetchProfileData();
+                    }
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 120, vertical: 10),

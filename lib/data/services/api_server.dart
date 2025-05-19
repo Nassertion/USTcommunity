@@ -3,6 +3,9 @@ import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
+import 'package:http_parser/http_parser.dart';
 
 Crud crud = Crud();
 
@@ -46,7 +49,6 @@ class Crud {
       if (response.statusCode == 200 || response.statusCode == 201) {
         print(response.body);
         return true;
-        
       } else {
         print('فشل في العملية: ${response.statusCode}');
         return false;
@@ -101,6 +103,52 @@ class Crud {
       }
     } catch (e) {
       print("خطأ أثناء الاتصال: $e");
+      return null;
+    }
+  }
+
+  Future<dynamic> uploadUserProfile({
+    required String displayName,
+    required String bio,
+    XFile? imageFile,
+  }) async {
+    try {
+      final token = await getToken();
+      if (token == null) return null;
+
+      var uri = Uri.parse("${linkServerName}api/v1/user/profile");
+
+      var request = http.MultipartRequest('POST', uri);
+      request.headers['Authorization'] = 'Bearer $token';
+      request.headers['Accept'] = 'application/json';
+
+      request.fields['displayName'] = displayName;
+      request.fields['bio'] = bio;
+
+      if (imageFile != null) {
+        final mimeTypeData = lookupMimeType(imageFile.path)?.split('/');
+        var multipartFile = await http.MultipartFile.fromPath(
+          'attachment', // تأكد اسم الحقل مع backend
+          imageFile.path,
+          contentType: mimeTypeData != null
+              ? MediaType(mimeTypeData[0], mimeTypeData[1])
+              : null,
+        );
+        request.files.add(multipartFile);
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonDecode(response.body);
+      } else {
+        print(
+            'فشل تحديث الملف الشخصي: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('خطأ في رفع الملف الشخصي: $e');
       return null;
     }
   }
