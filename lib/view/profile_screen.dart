@@ -1,12 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/services/api_server.dart';
+import 'package:graduation_project/view/comments_screen.dart';
 import 'package:graduation_project/view/edit_profile.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/data/model/profile_model.dart';
 import 'package:graduation_project/data/model/post_model.dart';
+import 'package:graduation_project/widgets/share_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:graduation_project/widgets/readmore.dart'; // لو عندك ال ExpandableContent
+import 'package:graduation_project/widgets/time_widget.dart'; // لو عندك formatPostDate
 
 class Profilescreen extends StatefulWidget {
   const Profilescreen({super.key});
@@ -24,16 +29,21 @@ class _ProfilescreenState extends State<Profilescreen>
   bool isLoadingPosts = false;
   bool isLoadingFollowers = false;
   bool isLoadingFollowings = false;
-  Profile? profile; // تغيرنا من late Profile إلى Profile?
+  Profile? profile;
+
+  // للحفظ المحلي لحالة اللايك والسيف (تقدر توسعها)
+  Map<int, bool> likedPosts = {};
+  Map<int, bool> savedPosts = {};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    fetchProfileData(); // جلب بيانات الـ Profile
+    fetchProfileData();
+    _loadLikedPosts();
+    _loadSavedPosts();
   }
 
-  // دالة لجلب بيانات الـ Profile
   Future<void> fetchProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_id');
@@ -43,8 +53,6 @@ class _ProfilescreenState extends State<Profilescreen>
       final response =
           await crud.getrequest("${linkServerName}api/v1/user/profile/$userId");
 
-      print("Response profile: $response");
-
       if (response != null && response['profile'] != null) {
         setState(() {
           profile = Profile.fromJson(response['profile']);
@@ -52,23 +60,22 @@ class _ProfilescreenState extends State<Profilescreen>
         fetchUserPosts();
         fetchFollowers();
         fetchFollowings();
-      } else {
-        print("Profile data not found in response");
       }
     }
   }
 
-  // دالة لجلب منشورات المستخدم
   Future<void> fetchUserPosts() async {
     setState(() => isLoadingPosts = true);
 
     try {
-      final response = await crud
-          .getrequest("${linkServerName}api/v1/posts/${profile?.userId}");
+      // تأكد من هذا الرابط مع الـ API الخاص بك
+      final response = await crud.getrequest(
+          "${linkServerName}api/v1/posts?user_id=${profile?.userId}");
 
-      if (response != null && response is List) {
+      if (response != null && response['data'] != null) {
+        List<dynamic> postsData = response['data'];
         setState(() {
-          posts = response.map((postData) => Post.fromJson(postData)).toList();
+          posts = postsData.map((postData) => Post.fromJson(postData)).toList();
         });
       }
     } catch (e) {
@@ -78,7 +85,6 @@ class _ProfilescreenState extends State<Profilescreen>
     }
   }
 
-  // دالة لجلب المتابعين
   Future<void> fetchFollowers() async {
     setState(() => isLoadingFollowers = true);
 
@@ -98,7 +104,6 @@ class _ProfilescreenState extends State<Profilescreen>
     }
   }
 
-  // دالة لجلب المتابعين لديك
   Future<void> fetchFollowings() async {
     setState(() => isLoadingFollowings = true);
 
@@ -118,6 +123,46 @@ class _ProfilescreenState extends State<Profilescreen>
     }
   }
 
+  // تحميل وحفظ حالة الإعجاب من SharedPreferences
+  Future<void> _loadLikedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedPostsData = prefs.getString('likedPosts');
+    if (likedPostsData != null) {
+      final Map<String, dynamic> decoded = jsonDecode(likedPostsData);
+      setState(() {
+        likedPosts = decoded
+            .map((key, value) => MapEntry(int.parse(key), value as bool));
+      });
+    }
+  }
+
+  Future<void> _saveLikedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedPostsData =
+        likedPosts.map((key, value) => MapEntry(key.toString(), value));
+    await prefs.setString('likedPosts', jsonEncode(likedPostsData));
+  }
+
+  // تحميل وحفظ حالة الحفظ من SharedPreferences
+  Future<void> _loadSavedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsData = prefs.getString('savedPosts');
+    if (savedPostsData != null) {
+      final Map<String, dynamic> decoded = jsonDecode(savedPostsData);
+      setState(() {
+        savedPosts = decoded
+            .map((key, value) => MapEntry(int.parse(key), value as bool));
+      });
+    }
+  }
+
+  Future<void> _saveSavedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsData =
+        savedPosts.map((key, value) => MapEntry(key.toString(), value));
+    await prefs.setString('savedPosts', jsonEncode(savedPostsData));
+  }
+
   Future<void> logout(BuildContext context) async {
     final response = await crud.postrequest(linklogout, {});
 
@@ -128,15 +173,21 @@ class _ProfilescreenState extends State<Profilescreen>
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: customAppBar(
-          "الملف الشخصي ",
-          IconButton(
-              onPressed: () {
-                logout(context);
-              },
-              icon: Icon(Icons.logout))),
+        "الملف الشخصي",
+        IconButton(
+          onPressed: () => logout(context),
+          icon: Icon(Icons.logout),
+        ),
+      ),
       body: Column(
         children: [
           Container(
@@ -161,7 +212,9 @@ class _ProfilescreenState extends State<Profilescreen>
                             style: TextStyle(fontSize: 16)),
                         SizedBox(height: 10),
                         Text(profile?.bio ?? 'لا يوجد بايو',
-                            style: TextStyle(fontSize: 16, color: Colors.grey)),
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: const Color.fromARGB(255, 95, 95, 95))),
                       ],
                     ),
                     SizedBox(
@@ -169,7 +222,7 @@ class _ProfilescreenState extends State<Profilescreen>
                       width: 60,
                       child: CircleAvatar(
                         backgroundImage: profile?.imageUrl != null &&
-                                profile?.imageUrl!.isNotEmpty == true
+                                profile!.imageUrl!.isNotEmpty
                             ? NetworkImage(profile!.imageUrl!)
                             : AssetImage("assets/images/user.png")
                                 as ImageProvider,
@@ -190,9 +243,7 @@ class _ProfilescreenState extends State<Profilescreen>
                         ),
                       ),
                     );
-
                     if (result == true) {
-                      // تم تعديل الملف، حدث البيانات من جديد
                       fetchProfileData();
                     }
                   },
@@ -207,7 +258,6 @@ class _ProfilescreenState extends State<Profilescreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // عرض عدد المتابعين
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -223,17 +273,15 @@ class _ProfilescreenState extends State<Profilescreen>
                           Text(
                             "${followers.length}",
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: kPrimaryolor,
-                            ),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: kPrimaryolor),
                           ),
                           Text("المتابعين"),
                         ],
                       ),
                     ),
                     SizedBox(width: 40),
-                    // عرض عدد المتابعين لديك
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
@@ -249,10 +297,9 @@ class _ProfilescreenState extends State<Profilescreen>
                           Text(
                             "${followings.length}",
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: kPrimaryolor,
-                            ),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: kPrimaryolor),
                           ),
                           Text("المتابعون لديك"),
                         ],
@@ -269,8 +316,8 @@ class _ProfilescreenState extends State<Profilescreen>
                     controller: _tabController,
                     tabs: [
                       Tab(text: "المنشورات"),
-                      Tab(text: "المحفوظه"),
-                      Tab(text: "التعليقات")
+                      Tab(text: "المحفوظة"),
+                      Tab(text: "التعليقات"),
                     ],
                   ),
                 ),
@@ -281,24 +328,169 @@ class _ProfilescreenState extends State<Profilescreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                // عرض المنشورات الخاصة بالمستخدم
+                // تبويب المنشورات - التصميم مثل الرئيسية
                 isLoadingPosts
                     ? Center(child: CircularProgressIndicator())
                     : ListView.builder(
                         itemCount: posts.length,
                         itemBuilder: (context, index) {
+                          Post post = posts[index];
+                          bool isLiked = likedPosts[post.id] ?? false;
+                          bool isSaved = savedPosts[post.id] ?? false;
+
                           return Card(
-                            margin: EdgeInsets.symmetric(vertical: 10),
-                            child: ListTile(
-                              title: Text(posts[index].title ?? 'لا عنوان'),
-                              subtitle: Text(posts[index].body ?? 'لا محتوى'),
-                              trailing: IconButton(
-                                icon: Icon(posts[index].isLiked
-                                    ? Icons.favorite
-                                    : Icons.favorite_border),
-                                onPressed: () {
-                                  // إجراء الإعجاب
-                                },
+                            color: kBackgroundColor,
+                            margin: EdgeInsets.all(8),
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Padding(
+                              padding: EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundImage: post.profile.imageUrl !=
+                                                  null &&
+                                              post.profile.imageUrl!.isNotEmpty
+                                          ? NetworkImage(post.profile.imageUrl!)
+                                          : AssetImage("assets/images/user.png")
+                                              as ImageProvider,
+                                    ),
+                                    title: Text(
+                                      post.profile.displayName,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
+                                    ),
+                                    subtitle: Text(
+                                      formatPostDate(post.createdAt),
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 10),
+                                    child: post.title != null
+                                        ? Text(post.title!,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 17))
+                                        : Text("بدون محتوى",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    child: post.body != null &&
+                                            post.body!.length > 100
+                                        ? ExpandableContent(text: post.body!)
+                                        : Text(post.body ?? "بدون محتوى"),
+                                  ),
+                                  if (post.attachmentUrl != null &&
+                                      post.attachmentUrl!.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 3),
+                                      child: Image.network(
+                                        "${linkServerName}storage/${post.attachmentUrl}",
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Text("لا يمكن تحميل الصورة"),
+                                      ),
+                                    ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      IconButton(
+                                        onPressed: () async {
+                                          setState(() {
+                                            likedPosts[post.id] =
+                                                !(likedPosts[post.id] ?? false);
+                                            post.likes +=
+                                                likedPosts[post.id]! ? 1 : -1;
+                                          });
+
+                                          final success = await crud.toggleLike(
+                                              post.id,
+                                              !(likedPosts[post.id] ?? false));
+                                          if (!success) {
+                                            setState(() {
+                                              likedPosts[post.id] =
+                                                  !(likedPosts[post.id] ??
+                                                      true);
+                                              post.likes +=
+                                                  likedPosts[post.id]! ? 1 : -1;
+                                            });
+                                          }
+                                          await _saveLikedPosts();
+                                        },
+                                        icon: Row(
+                                          children: [
+                                            Icon(
+                                              likedPosts[post.id] ?? false
+                                                  ? Icons.favorite
+                                                  : Icons.favorite_border,
+                                              color:
+                                                  likedPosts[post.id] ?? false
+                                                      ? Colors.red
+                                                      : null,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text("${post.likes}"),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  CommentsScreen(
+                                                      postId: post.id),
+                                            ),
+                                          );
+                                        },
+                                        icon: Row(
+                                          children: [
+                                            Icon(Icons.message),
+                                            SizedBox(width: 4),
+                                            Text("${post.comments.length}"),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () {
+                                          sharePost(post.id);
+                                        },
+                                        icon: Icon(Icons.share),
+                                      ),
+                                      IconButton(
+                                        onPressed: () async {
+                                          setState(() {
+                                            savedPosts[post.id] =
+                                                !(savedPosts[post.id] ?? false);
+                                          });
+                                          await _saveSavedPosts();
+                                        },
+                                        icon: Icon(
+                                          savedPosts[post.id] ?? false
+                                              ? Icons.bookmark
+                                              : Icons.bookmark_border,
+                                          color: savedPosts[post.id] ?? false
+                                              ? Colors.blue
+                                              : null,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -315,6 +507,7 @@ class _ProfilescreenState extends State<Profilescreen>
   }
 }
 
+// تابع شاشة عرض المتابعين
 class FollowersListScreen extends StatelessWidget {
   final List<dynamic> followers;
 
@@ -344,6 +537,7 @@ class FollowersListScreen extends StatelessWidget {
   }
 }
 
+// تابع شاشة عرض المتابعين لديك
 class FollowingsListScreen extends StatelessWidget {
   final List<dynamic> followings;
 

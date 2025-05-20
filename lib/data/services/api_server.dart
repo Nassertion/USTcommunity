@@ -59,6 +59,52 @@ class Crud {
     }
   }
 
+  Future<bool> toggleBookmark(int postId, bool isBookmarked) async {
+    try {
+      final token = await getToken();
+      final Map<String, String> headers = {
+        'Authorization': token != null ? 'Bearer $token' : '',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      };
+
+      final String endpoint = "${linkServerName}api/v1/bookmark/$postId";
+      final response = isBookmarked
+          ? await http.delete(Uri.parse(endpoint), headers: headers)
+          : await http.put(Uri.parse(endpoint), headers: headers);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print(response.body);
+        return true;
+      } else {
+        print('فشل في العملية: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('خطأ في الاتصال: $e');
+      return false;
+    }
+  }
+
+  Future<void> saveSavedPosts(Map<int, bool> savedPosts) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsJson =
+        savedPosts.map((key, value) => MapEntry(key.toString(), value));
+    await prefs.setString('savedPosts', jsonEncode(savedPostsJson));
+  }
+
+  // جلب حالة الحفظ من SharedPreferences
+  Future<Map<int, bool>> getSavedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsJson = prefs.getString('savedPosts');
+    if (savedPostsJson != null) {
+      final Map<String, dynamic> decoded = jsonDecode(savedPostsJson);
+      return decoded
+          .map((key, value) => MapEntry(int.parse(key), value as bool));
+    }
+    return {};
+  }
+
   // دالة لجلب البيانات من الخادم
   Future<dynamic> getrequest(String uri) async {
     try {
