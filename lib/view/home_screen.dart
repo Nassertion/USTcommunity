@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graduation_project/view/report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
@@ -219,7 +220,7 @@ class _HomescreenState extends State<Homescreen> {
                               post.attachmentUrl!.isNotEmpty)
                             Padding(
                               padding:
-                                  const EdgeInsets.symmetric(vertical: 8.0),
+                                  const EdgeInsets.symmetric(vertical: 3.0),
                               child: Image.network(
                                 "${linkServerName}storage/${post.attachmentUrl}",
                                 errorBuilder: (context, error, stackTrace) {
@@ -227,20 +228,7 @@ class _HomescreenState extends State<Homescreen> {
                                 },
                               ),
                             ),
-                          if (post.attachmentUrl != null &&
-                              post.attachmentUrl!.isNotEmpty)
-                            // Padding(
-                            //   padding:
-                            //       const EdgeInsets.symmetric(vertical: 8.0),
-                            //   child: Image.network(
-                            //     "${linkServerName}storage/${post.attachmentUrl}",
-                            //     fit: BoxFit.cover,
-                            //     errorBuilder: (context, error, stackTrace) {
-                            //       return Text('لا يمكن تحميل الصورة');
-                            //     },
-                            //   ),
-                            // ),
-                            SizedBox(height: 10),
+                          SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -322,6 +310,21 @@ class _HomescreenState extends State<Homescreen> {
                                       ? Colors.blue
                                       : null,
                                 ),
+                              ),
+                              IconButton(
+                                onPressed: () async {
+                                  SharedPreferences prefs =
+                                      await SharedPreferences.getInstance();
+                                  await prefs.setInt('postIdForReport',
+                                      post.id); // خزّن الـ id هنا
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ReportScreen()),
+                                  );
+                                },
+                                icon: Icon(Icons.warning),
                               ),
                             ],
                           ),
