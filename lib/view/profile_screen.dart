@@ -4,14 +4,16 @@ import 'package:graduation_project/constant/ConstantLinks.dart';
 import 'package:graduation_project/constant/constantColors.dart';
 import 'package:graduation_project/data/services/api_server.dart';
 import 'package:graduation_project/view/comments_screen.dart';
+import 'package:graduation_project/view/edit_post_screen.dart';
 import 'package:graduation_project/view/edit_profile.dart';
 import 'package:graduation_project/widgets/app_bar.dart';
 import 'package:graduation_project/data/model/profile_model.dart';
 import 'package:graduation_project/data/model/post_model.dart';
+import 'package:graduation_project/widgets/readmore.dart';
 import 'package:graduation_project/widgets/share_widget.dart';
+import 'package:graduation_project/widgets/time_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:graduation_project/widgets/readmore.dart'; // لو عندك ال ExpandableContent
-import 'package:graduation_project/widgets/time_widget.dart'; // لو عندك formatPostDate
+import 'package:http/http.dart' as http;
 
 class Profilescreen extends StatefulWidget {
   const Profilescreen({super.key});
@@ -31,7 +33,7 @@ class _ProfilescreenState extends State<Profilescreen>
   bool isLoadingFollowings = false;
   Profile? profile;
 
-  // للحفظ المحلي لحالة اللايك والسيف (تقدر توسعها)
+  // للحفظ مؤقت لحالة الإعجاب والحفظ على المنشورات داخل الصفحة الشخصية (اختياري)
   Map<int, bool> likedPosts = {};
   Map<int, bool> savedPosts = {};
 
@@ -44,6 +46,56 @@ class _ProfilescreenState extends State<Profilescreen>
     _loadSavedPosts();
   }
 
+  Future<bool> deletePost(int postId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return false;
+
+    final uri = Uri.parse("${linkServerName}api/v1/posts/$postId");
+    final response = await http.delete(uri, headers: {
+      'Authorization': 'Bearer $token',
+      'Accept': 'application/json',
+    });
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return true;
+    } else {
+      print('فشل حذف المنشور: ${response.statusCode} - ${response.body}');
+      return false;
+    }
+  }
+
+  Future<void> _saveSavedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsData =
+        savedPosts.map((key, value) => MapEntry(key.toString(), value));
+    await prefs.setString('savedPosts', jsonEncode(savedPostsData));
+  }
+
+  Future<void> _loadLikedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedPostsData = prefs.getString('likedPosts');
+    if (likedPostsData != null) {
+      final Map<String, dynamic> decoded = jsonDecode(likedPostsData);
+      setState(() {
+        likedPosts = decoded
+            .map((key, value) => MapEntry(int.parse(key), value as bool));
+      });
+    }
+  }
+
+  Future<void> _loadSavedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPostsData = prefs.getString('savedPosts');
+    if (savedPostsData != null) {
+      final Map<String, dynamic> decoded = jsonDecode(savedPostsData);
+      setState(() {
+        savedPosts = decoded
+            .map((key, value) => MapEntry(int.parse(key), value as bool));
+      });
+    }
+  }
+
   Future<void> fetchProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('user_id');
@@ -53,6 +105,8 @@ class _ProfilescreenState extends State<Profilescreen>
       final response =
           await crud.getrequest("${linkServerName}api/v1/user/profile/$userId");
 
+      print("Response profile: $response");
+
       if (response != null && response['profile'] != null) {
         setState(() {
           profile = Profile.fromJson(response['profile']);
@@ -60,29 +114,46 @@ class _ProfilescreenState extends State<Profilescreen>
         fetchUserPosts();
         fetchFollowers();
         fetchFollowings();
+      } else {
+        print("Profile data not found in response");
       }
     }
   }
 
+  // جلب منشورات المستخدم عن طريق جلب المنشورات كلها وتصفيتها محلياً
   Future<void> fetchUserPosts() async {
     setState(() => isLoadingPosts = true);
 
     try {
-      // تأكد من هذا الرابط مع الـ API الخاص بك
-      final response = await crud.getrequest(
-          "${linkServerName}api/v1/posts?user_id=${profile?.userId}");
+      final response = await crud
+          .getrequest("${linkServerName}api/v1/posts?page=1&limit=100");
+      if (response != null && response is Map<String, dynamic>) {
+        final allPosts = response['data'] as List;
+        final filteredPosts = allPosts
+            .where((post) => post['user_id'] == profile?.userId)
+            .toList();
 
-      if (response != null && response['data'] != null) {
-        List<dynamic> postsData = response['data'];
         setState(() {
-          posts = postsData.map((postData) => Post.fromJson(postData)).toList();
+          posts =
+              filteredPosts.map((postData) => Post.fromJson(postData)).toList();
+        });
+      } else {
+        setState(() {
+          posts = [];
         });
       }
     } catch (e) {
-      print("خطأ في جلب المنشورات: $e");
+      print("خطأ في جلب منشورات المستخدم: $e");
     } finally {
       setState(() => isLoadingPosts = false);
     }
+  }
+
+  Future<void> _saveLikedPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final likedPostsData =
+        likedPosts.map((key, value) => MapEntry(key.toString(), value));
+    await prefs.setString('likedPosts', jsonEncode(likedPostsData));
   }
 
   Future<void> fetchFollowers() async {
@@ -123,46 +194,6 @@ class _ProfilescreenState extends State<Profilescreen>
     }
   }
 
-  // تحميل وحفظ حالة الإعجاب من SharedPreferences
-  Future<void> _loadLikedPosts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final likedPostsData = prefs.getString('likedPosts');
-    if (likedPostsData != null) {
-      final Map<String, dynamic> decoded = jsonDecode(likedPostsData);
-      setState(() {
-        likedPosts = decoded
-            .map((key, value) => MapEntry(int.parse(key), value as bool));
-      });
-    }
-  }
-
-  Future<void> _saveLikedPosts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final likedPostsData =
-        likedPosts.map((key, value) => MapEntry(key.toString(), value));
-    await prefs.setString('likedPosts', jsonEncode(likedPostsData));
-  }
-
-  // تحميل وحفظ حالة الحفظ من SharedPreferences
-  Future<void> _loadSavedPosts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedPostsData = prefs.getString('savedPosts');
-    if (savedPostsData != null) {
-      final Map<String, dynamic> decoded = jsonDecode(savedPostsData);
-      setState(() {
-        savedPosts = decoded
-            .map((key, value) => MapEntry(int.parse(key), value as bool));
-      });
-    }
-  }
-
-  Future<void> _saveSavedPosts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedPostsData =
-        savedPosts.map((key, value) => MapEntry(key.toString(), value));
-    await prefs.setString('savedPosts', jsonEncode(savedPostsData));
-  }
-
   Future<void> logout(BuildContext context) async {
     final response = await crud.postrequest(linklogout, {});
 
@@ -173,21 +204,15 @@ class _ProfilescreenState extends State<Profilescreen>
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: customAppBar(
-        "الملف الشخصي",
-        IconButton(
-          onPressed: () => logout(context),
-          icon: Icon(Icons.logout),
-        ),
-      ),
+          "الملف الشخصي ",
+          IconButton(
+              onPressed: () {
+                logout(context);
+              },
+              icon: Icon(Icons.logout))),
       body: Column(
         children: [
           Container(
@@ -212,9 +237,7 @@ class _ProfilescreenState extends State<Profilescreen>
                             style: TextStyle(fontSize: 16)),
                         SizedBox(height: 10),
                         Text(profile?.bio ?? 'لا يوجد بايو',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: const Color.fromARGB(255, 95, 95, 95))),
+                            style: TextStyle(fontSize: 16, color: Colors.grey)),
                       ],
                     ),
                     SizedBox(
@@ -222,7 +245,7 @@ class _ProfilescreenState extends State<Profilescreen>
                       width: 60,
                       child: CircleAvatar(
                         backgroundImage: profile?.imageUrl != null &&
-                                profile!.imageUrl!.isNotEmpty
+                                profile?.imageUrl!.isNotEmpty == true
                             ? NetworkImage(profile!.imageUrl!)
                             : AssetImage("assets/images/user.png")
                                 as ImageProvider,
@@ -243,6 +266,7 @@ class _ProfilescreenState extends State<Profilescreen>
                         ),
                       ),
                     );
+
                     if (result == true) {
                       fetchProfileData();
                     }
@@ -273,9 +297,10 @@ class _ProfilescreenState extends State<Profilescreen>
                           Text(
                             "${followers.length}",
                             style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: kPrimaryolor),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: kPrimaryolor,
+                            ),
                           ),
                           Text("المتابعين"),
                         ],
@@ -297,9 +322,10 @@ class _ProfilescreenState extends State<Profilescreen>
                           Text(
                             "${followings.length}",
                             style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: kPrimaryolor),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: kPrimaryolor,
+                            ),
                           ),
                           Text("المتابعون لديك"),
                         ],
@@ -317,7 +343,7 @@ class _ProfilescreenState extends State<Profilescreen>
                     tabs: [
                       Tab(text: "المنشورات"),
                       Tab(text: "المحفوظة"),
-                      Tab(text: "التعليقات"),
+                      Tab(text: "التعليقات")
                     ],
                   ),
                 ),
@@ -328,13 +354,288 @@ class _ProfilescreenState extends State<Profilescreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                // تبويب المنشورات - التصميم مثل الرئيسية
+                isLoadingPosts
+                    ? Center(child: CircularProgressIndicator())
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          // سطر ~72
+                          setState(() {
+                            posts.clear(); // سطر ~73
+                            // page = 1; // سطر ~74
+                          });
+                          await fetchUserPosts(); // سطر ~75
+                        },
+                        child: ListView.builder(
+                          itemCount: posts.length,
+                          itemBuilder: (context, index) {
+                            Post post = posts[index];
+                            bool isLiked = likedPosts[post.id] ?? false;
+                            bool isSaved = savedPosts[post.id] ?? false;
+
+                            return Card(
+                              color: kBackgroundColor,
+                              margin: EdgeInsets.all(8),
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundImage: post
+                                                        .profile.imageUrl !=
+                                                    null &&
+                                                post.profile.imageUrl!
+                                                    .isNotEmpty
+                                            ? NetworkImage(
+                                                post.profile.imageUrl!)
+                                            : AssetImage(
+                                                    "assets/images/user.png")
+                                                as ImageProvider,
+                                      ),
+                                      title: Text(
+                                        post.profile.displayName,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        formatPostDate(post.createdAt),
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: const Color.fromARGB(
+                                                255, 121, 121, 121)),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10.0, vertical: 10),
+                                      child: post.title != null
+                                          ? Text(
+                                              post.title ?? "",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 17),
+                                            )
+                                          : Text(post.title ?? "بدون محتوى",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold)),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10.0),
+                                      child: post.body != null &&
+                                              post.body!.length > 100
+                                          ? ExpandableContent(text: post.body!)
+                                          : Text(post.body ?? "بدون محتوى"),
+                                    ),
+                                    if (post.attachmentUrl != null &&
+                                        post.attachmentUrl!.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 3.0),
+                                        child: Image.network(
+                                          "${linkServerName}storage/${post.attachmentUrl}",
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Text("لا يمكن تحميل الصورة");
+                                          },
+                                        ),
+                                      ),
+                                    SizedBox(height: 10),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        IconButton(
+                                          onPressed: () async {
+                                            setState(() {
+                                              likedPosts[post.id] =
+                                                  !(likedPosts[post.id] ??
+                                                      false);
+                                              post.likes +=
+                                                  likedPosts[post.id]! ? 1 : -1;
+                                            });
+
+                                            final success =
+                                                await crud.toggleLike(
+                                                    post.id,
+                                                    !(likedPosts[post.id] ??
+                                                        false));
+                                            if (!success) {
+                                              setState(() {
+                                                likedPosts[post.id] =
+                                                    !(likedPosts[post.id] ??
+                                                        true);
+                                                post.likes +=
+                                                    likedPosts[post.id]!
+                                                        ? 1
+                                                        : -1;
+                                              });
+                                            }
+
+                                            await _saveLikedPosts();
+                                          },
+                                          icon: Row(
+                                            children: [
+                                              Icon(
+                                                likedPosts[post.id] ?? false
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color:
+                                                    likedPosts[post.id] ?? false
+                                                        ? Colors.red
+                                                        : null,
+                                              ),
+                                              SizedBox(width: 4),
+                                              Text("${post.likes}"),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CommentsScreen(
+                                                        postId: post.id),
+                                              ),
+                                            );
+                                          },
+                                          icon: Row(
+                                            children: [
+                                              Icon(Icons.message),
+                                              SizedBox(width: 4),
+                                              Text("${post.comments.length}"),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () {
+                                            sharePost(post.id);
+                                          },
+                                          icon: Icon(Icons.share),
+                                        ),
+                                        IconButton(
+                                          onPressed: () async {
+                                            setState(() {
+                                              savedPosts[post.id] =
+                                                  !(savedPosts[post.id] ??
+                                                      false);
+                                            });
+                                            await _saveSavedPosts();
+                                            print(
+                                                "✅ تم ${savedPosts[post.id]! ? "الحفظ" : "إلغاء الحفظ"} على المنشور: ${post.id}");
+                                          },
+                                          icon: Icon(
+                                            savedPosts[post.id] ?? false
+                                                ? Icons.bookmark
+                                                : Icons.bookmark_border,
+                                            color: savedPosts[post.id] ?? false
+                                                ? Colors.blue
+                                                : null,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.edit,
+                                              color: Colors.blue),
+                                          onPressed: () async {
+                                            final result = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    EditPostScreen(post: post),
+                                              ),
+                                            );
+                                            if (result == true) {
+                                              // تحديث المنشورات بعد التعديل
+                                              setState(() {
+                                                // posts.clear();
+                                                // page = 1;
+                                              });
+                                              fetchUserPosts();
+                                            }
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(Icons.delete,
+                                              color: Colors.red),
+                                          onPressed: () async {
+                                            final confirm =
+                                                await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: Text('تأكيد الحذف'),
+                                                content: Text(
+                                                    'هل أنت متأكد من حذف هذا المنشور؟'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            context, false),
+                                                    child: Text('إلغاء'),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            context, true),
+                                                    child: Text('حذف'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+
+                                            if (confirm == true) {
+                                              bool success =
+                                                  await deletePost(post.id);
+                                              if (success) {
+                                                setState(() {
+                                                  posts.removeAt(index);
+                                                });
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                      content: Text(
+                                                          'تم حذف المنشور')),
+                                                );
+                                              } else {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                      content: Text(
+                                                          'فشل حذف المنشور')),
+                                                );
+                                              }
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                // تبويب "المحفوظة" - نستخدم هنا posts المحفوظة (savedPosts)
                 isLoadingPosts
                     ? Center(child: CircularProgressIndicator())
                     : ListView.builder(
-                        itemCount: posts.length,
+                        itemCount: posts
+                            .where((post) => savedPosts[post.id] ?? false)
+                            .length,
                         itemBuilder: (context, index) {
-                          Post post = posts[index];
+                          final savedList = posts
+                              .where((post) => savedPosts[post.id] ?? false)
+                              .toList();
+                          Post post = savedList[index];
                           bool isLiked = likedPosts[post.id] ?? false;
                           bool isSaved = savedPosts[post.id] ?? false;
 
@@ -343,7 +644,8 @@ class _ProfilescreenState extends State<Profilescreen>
                             margin: EdgeInsets.all(8),
                             elevation: 4,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             child: Padding(
                               padding: EdgeInsets.all(12),
                               child: Column(
@@ -361,30 +663,33 @@ class _ProfilescreenState extends State<Profilescreen>
                                     title: Text(
                                       post.profile.displayName,
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                     subtitle: Text(
                                       formatPostDate(post.createdAt),
                                       style: TextStyle(
-                                          fontSize: 12, color: Colors.grey),
+                                          fontSize: 12,
+                                          color: const Color.fromARGB(
+                                              255, 121, 121, 121)),
                                     ),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 10),
+                                        horizontal: 10.0, vertical: 10),
                                     child: post.title != null
-                                        ? Text(post.title!,
+                                        ? Text(post.title ?? "",
                                             style: TextStyle(
                                                 fontWeight: FontWeight.w500,
                                                 fontSize: 17))
-                                        : Text("بدون محتوى",
+                                        : Text(post.title ?? "بدون محتوى",
                                             style: TextStyle(
                                                 fontWeight: FontWeight.bold)),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
+                                        horizontal: 10.0),
                                     child: post.body != null &&
                                             post.body!.length > 100
                                         ? ExpandableContent(text: post.body!)
@@ -394,12 +699,13 @@ class _ProfilescreenState extends State<Profilescreen>
                                       post.attachmentUrl!.isNotEmpty)
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 3),
+                                          vertical: 3.0),
                                       child: Image.network(
                                         "${linkServerName}storage/${post.attachmentUrl}",
                                         errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Text("لا يمكن تحميل الصورة"),
+                                            (context, error, stackTrace) {
+                                          return Text("لا يمكن تحميل الصورة");
+                                        },
                                       ),
                                     ),
                                   SizedBox(height: 10),
@@ -428,6 +734,7 @@ class _ProfilescreenState extends State<Profilescreen>
                                                   likedPosts[post.id]! ? 1 : -1;
                                             });
                                           }
+
                                           await _saveLikedPosts();
                                         },
                                         icon: Row(
@@ -478,6 +785,8 @@ class _ProfilescreenState extends State<Profilescreen>
                                                 !(savedPosts[post.id] ?? false);
                                           });
                                           await _saveSavedPosts();
+                                          print(
+                                              "✅ تم ${savedPosts[post.id]! ? "الحفظ" : "إلغاء الحفظ"} على المنشور: ${post.id}");
                                         },
                                         icon: Icon(
                                           savedPosts[post.id] ?? false
@@ -496,7 +805,6 @@ class _ProfilescreenState extends State<Profilescreen>
                           );
                         },
                       ),
-                Center(child: Text("محتوى المحفوظة")),
                 Center(child: Text("محتوى التعليقات")),
               ],
             ),
@@ -507,7 +815,6 @@ class _ProfilescreenState extends State<Profilescreen>
   }
 }
 
-// تابع شاشة عرض المتابعين
 class FollowersListScreen extends StatelessWidget {
   final List<dynamic> followers;
 
@@ -537,7 +844,6 @@ class FollowersListScreen extends StatelessWidget {
   }
 }
 
-// تابع شاشة عرض المتابعين لديك
 class FollowingsListScreen extends StatelessWidget {
   final List<dynamic> followings;
 

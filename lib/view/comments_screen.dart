@@ -147,9 +147,9 @@ class _CommentsScreenState extends State<CommentsScreen> {
               ? Center(child: Text("المنشور غير موجود"))
               : Column(
                   children: [
-                    // عرض البوست أولاً
                     Padding(
-                      padding: EdgeInsets.all(12),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 25),
                       child: Card(
                         color: kBackgroundColor,
                         shape: RoundedRectangleBorder(

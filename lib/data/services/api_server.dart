@@ -34,6 +34,7 @@ class Crud {
   Future<bool> toggleLike(int postId, bool isLiked) async {
     try {
       final token = await getToken();
+      print(token);
       final Map<String, String> headers = {
         'Authorization': token != null ? 'Bearer $token' : '',
         'Accept': 'application/json',
@@ -72,17 +73,25 @@ class Crud {
       final response = isBookmarked
           ? await http.delete(Uri.parse(endpoint), headers: headers)
           : await http.put(Uri.parse(endpoint), headers: headers);
+      print(
+          'Request to $endpoint with method ${isBookmarked ? "DELETE" : "PUT"}');
+      print('Headers: $headers');
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print(response.body);
-        return true;
+        return !isBookmarked;
+      } else if (response.statusCode == 404 && isBookmarked) {
+        print('Bookmark not found during deletion, treated as success.');
+        return false; // لأنه غير محجوز الآن
       } else {
         print('فشل في العملية: ${response.statusCode}');
-        return false;
+        return isBookmarked; // خلي الحالة زي ما هي لو فشلنا
       }
     } catch (e) {
       print('خطأ في الاتصال: $e');
-      return false;
+      return isBookmarked; // لو صار خطأ خلي الحالة زي ما هي
     }
   }
 

@@ -100,46 +100,11 @@ class _SearchscreenState extends State<Searchscreen> {
           else if (searchResults.isNotEmpty || userResults.isNotEmpty)
             Expanded(
               child: ListView.builder(
-                itemCount: searchResults.length + userResults.length,
+                itemCount: userResults.length + searchResults.length,
                 itemBuilder: (context, index) {
-                  if (index < searchResults.length) {
-                    final post = searchResults[index];
-                    return Card(
-                      color: kBackgroundColor,
-                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      elevation: 4,
-                      child: Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: CircleAvatar(
-                                backgroundImage:
-                                    post.profile.imageUrl != null &&
-                                            post.profile.imageUrl!.isNotEmpty
-                                        ? NetworkImage(post.profile.imageUrl!)
-                                        : AssetImage("assets/images/user.png")
-                                            as ImageProvider,
-                              ),
-                              title: Text(
-                                post.profile.displayName,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(post.body ?? "بدون محتوى",
-                                style: TextStyle(fontSize: 14)),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else {
-                    final user = userResults[index - searchResults.length];
+                  if (index < userResults.length) {
+                    // عرض المستخدمين أولًا
+                    final user = userResults[index];
                     final profile = user['profile'] ?? {};
                     final isStaff = user['user_type_id'] == 2;
 
@@ -177,6 +142,43 @@ class _SearchscreenState extends State<Searchscreen> {
                                 style: TextStyle(fontSize: 13, color: kgrey),
                               ),
                             ),
+                          ],
+                        ),
+                      ),
+                    );
+                  } else {
+                    // عرض البوستات بعد المستخدمين
+                    final post = searchResults[index - userResults.length];
+                    return Card(
+                      color: kBackgroundColor,
+                      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      elevation: 4,
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: CircleAvatar(
+                                backgroundImage:
+                                    post.profile.imageUrl != null &&
+                                            post.profile.imageUrl!.isNotEmpty
+                                        ? NetworkImage(post.profile.imageUrl!)
+                                        : AssetImage("assets/images/user.png")
+                                            as ImageProvider,
+                              ),
+                              title: Text(
+                                post.profile.displayName,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Text(post.body ?? "بدون محتوى",
+                                style: TextStyle(fontSize: 14)),
                           ],
                         ),
                       ),
